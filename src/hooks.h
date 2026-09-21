@@ -21,6 +21,9 @@ class hooks {
             }
             
             SKSE::log::info("Installed processHit hook. ");
+            
+            //anim speed hooks from simple timed block addons
+
             SKSE::log::info("Finished Installing Hooks. ");
         }
 
@@ -39,8 +42,15 @@ class hooks {
                     static_cast<void*>(timedBlockWindowSpell), static_cast<void*>(timedBlockWindowMGEF), static_cast<void*>(timedBlockStaggerSpell), static_cast<void*>(timeBlockBuffSpell));
                 return false;
             }
+            if (!timed_block_explosion|| !timed_block_counter_glob || !timedBlockSFX) {
+                SKSE::log::error("Failed to load effect forms: timed_block_explosion={}, timed_block_counter_glob={}, timedBlockSFX={}", 
+                    static_cast<void*>(timed_block_explosion), static_cast<void*>(timed_block_counter_glob), static_cast<void*>(timedBlockSFX));
+                return false;
+            }
             SKSE::log::info("Correctly loaded spell forms: timedBlockWindowSpell={}, timedBlockWindowMGEF={}, timedBlockStaggerSpell={}, timeBlockBuffSpell={}", 
                     static_cast<void*>(timedBlockWindowSpell), static_cast<void*>(timedBlockWindowMGEF), static_cast<void*>(timedBlockStaggerSpell), static_cast<void*>(timeBlockBuffSpell));
+            SKSE::log::info("Correctly loaded effect forms: timed_block_explosion={}, timed_block_counter_glob={}, timedBlockSFX={}", 
+                    static_cast<void*>(timed_block_explosion), static_cast<void*>(timed_block_counter_glob), static_cast<void*>(timedBlockSFX));
             return true;
         }
 

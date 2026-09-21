@@ -5,6 +5,7 @@
 #include <spdlog/sinks/msvc_sink.h>
 
 #include "hooks.h"
+#include "settings.h"
 
 using namespace SKSE;
 using namespace SKSE::log;
@@ -49,10 +50,9 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     // hooks::Install();
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* msg) {
         switch (msg->type) {
-            // case SKSE::MessagingInterface::kPostLoad:
-            //     // settings::RegisterMenu();
-            //     // hooks::Install(); //for maxsu poise compat
-            //     break;
+            case SKSE::MessagingInterface::kPostLoad:
+                settings::RegisterMenu();
+                break;
             case SKSE::MessagingInterface::kDataLoaded:
                 hooks::LoadForms();
                 hooks::Install(); //for maxsu poise compat
