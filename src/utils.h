@@ -1,4 +1,6 @@
 #pragma once
+#include "hooks.h"
+
 
 namespace utils {
     inline static bool ApplySpell(RE::Actor* a_caster, RE::Actor* a_target, RE::SpellItem* a_spell) {
@@ -47,4 +49,24 @@ namespace utils {
         }
         return handle;
     }
+
+    inline static void StaggerNearby(RE::Actor* a_defender, RE::Actor* a_attacker, float radius) {
+        auto* cell = a_defender ? a_defender->GetParentCell() : nullptr;
+        if (!cell || !cell->IsAttached() || radius <= 0.0f) {
+            return;
+        }
+        radius = std::min(radius, 4095.0f);
+        cell->ForEachReferenceInRange(a_defender->GetPosition(), radius, [&](RE::TESObjectREFR* ref){
+            auto* actor = ref ? ref->As<RE::Actor>() : nullptr;
+            if (!actor ||
+                // actor->IsDead() ||
+                actor->IsDisabled() ||
+                !actor->Is3DLoaded()) {
+                return RE::BSContainer::ForEachResult::kContinue;
+            }
+            SKSE::log::info( "[Utils] Staggering={:08X} ", actor ? actor->GetFormID() : 0);
+            ApplySpell(a_defender, actor, hooks::timedBlockStaggerSpell);
+            return RE::BSContainer::ForEachResult::kContinue;
+        });
+    }   
 }

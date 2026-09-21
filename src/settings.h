@@ -12,6 +12,9 @@ namespace settings {
         bool preventAllDamage = true;
         float additionalDamageReduction = 0.5;
         
+        bool AOEStaggerEnabled = true;
+        float AOEStaggerRadius = 256.0f;
+        
         float attackerSlowDownMult = 0.05f;
         float attackerSlowdownDuration = 0.5f;
     };
@@ -26,8 +29,13 @@ namespace settings {
         setting_definition<bool>{ "log", &settings::config::log },
         setting_definition<bool>{ "applyTimedBlockVFX", &settings::config::applyTimedBlockVFX },
         setting_definition<bool>{ "applyTimedBlockSFX", &settings::config::applyTimedBlockSFX },
+
         setting_definition<bool>{ "preventAllDamage", &settings::config::preventAllDamage },
         setting_definition<float>{ "additionalDamageReduction", &settings::config::additionalDamageReduction },
+        
+        setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
+        setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
+        
         setting_definition<float>{ "attackerSlowDownMult", &settings::config::attackerSlowDownMult },
         setting_definition<float>{ "attackerSlowdownDuration", &settings::config::attackerSlowdownDuration },
     };
