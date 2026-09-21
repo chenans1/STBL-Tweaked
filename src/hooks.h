@@ -2,12 +2,20 @@
 
 class hooks {
     public:
+        static inline RE::SpellItem* timedBlockWindowSpell = nullptr;
+        static inline RE::EffectSetting* timedBlockWindowMGEF = nullptr;
+        static inline RE::SpellItem* timedBlockStaggerSpell = nullptr;
+        static inline RE::SpellItem* timeBlockBuffSpell = nullptr;
+        static inline RE::BGSExplosion* timed_block_explosion = nullptr;
+        static inline RE::TESGlobal* timed_block_counter_glob = nullptr;
+        static inline RE::BGSSoundDescriptorForm* timedBlockSFX = nullptr;
+
         static void Install() {
             SKSE::log::info("Installing Hooks...");
             SKSE::log::info("Installing PlayerCharacter notifyanimationgraph hook...");
 
             {
-                 REL::Relocation<uintptr_t> PlayerCharacter_IAnimationGraphManagerHolderVtbl{RE::VTABLE_PlayerCharacter[3]};
+                REL::Relocation<uintptr_t> PlayerCharacter_IAnimationGraphManagerHolderVtbl{RE::VTABLE_PlayerCharacter[3]};
                 _PC_NotifyAnimationGraph = PlayerCharacter_IAnimationGraphManagerHolderVtbl.write_vfunc(0x1, PC_NotifyAnimationGraph);
             }
            
@@ -47,22 +55,21 @@ class hooks {
                     static_cast<void*>(timed_block_explosion), static_cast<void*>(timed_block_counter_glob), static_cast<void*>(timedBlockSFX));
                 return false;
             }
-            SKSE::log::info("Correctly loaded spell forms: timedBlockWindowSpell={}, timedBlockWindowMGEF={}, timedBlockStaggerSpell={}, timeBlockBuffSpell={}", 
-                    static_cast<void*>(timedBlockWindowSpell), static_cast<void*>(timedBlockWindowMGEF), static_cast<void*>(timedBlockStaggerSpell), static_cast<void*>(timeBlockBuffSpell));
-            SKSE::log::info("Correctly loaded effect forms: timed_block_explosion={}, timed_block_counter_glob={}, timedBlockSFX={}", 
-                    static_cast<void*>(timed_block_explosion), static_cast<void*>(timed_block_counter_glob), static_cast<void*>(timedBlockSFX));
+            SKSE::log::info("Correctly loaded spell forms: timedBlockWindowSpell={:08X}, timedBlockWindowMGEF={:08X}, timedBlockStaggerSpell={:08X}, timeBlockBuffSpell={:08X}", 
+                    timedBlockWindowSpell->GetFormID(), timedBlockWindowMGEF->GetFormID(), timedBlockStaggerSpell->GetFormID(), timeBlockBuffSpell->GetFormID());
+            SKSE::log::info("Correctly loaded effect forms: timed_block_explosion={:08X}, timed_block_counter_glob={:08X}, timedBlockSFX={:08X}", 
+                   timed_block_explosion->GetFormID(), timed_block_counter_glob->GetFormID(), timedBlockSFX->GetFormID());
             return true;
         }
 
     private:
-        
-        static inline RE::SpellItem* timedBlockWindowSpell = nullptr;
-        static inline RE::EffectSetting* timedBlockWindowMGEF = nullptr;
-        static inline RE::SpellItem* timedBlockStaggerSpell = nullptr;
-        static inline RE::SpellItem* timeBlockBuffSpell = nullptr;
-        static inline RE::BGSExplosion* timed_block_explosion = nullptr;
-        static inline RE::TESGlobal* timed_block_counter_glob = nullptr;
-        static inline RE::BGSSoundDescriptorForm* timedBlockSFX = nullptr;
+        // static inline RE::SpellItem* timedBlockWindowSpell = nullptr;
+        // static inline RE::EffectSetting* timedBlockWindowMGEF = nullptr;
+        // static inline RE::SpellItem* timedBlockStaggerSpell = nullptr;
+        // static inline RE::SpellItem* timeBlockBuffSpell = nullptr;
+        // static inline RE::BGSExplosion* timed_block_explosion = nullptr;
+        // static inline RE::TESGlobal* timed_block_counter_glob = nullptr;
+        // static inline RE::BGSSoundDescriptorForm* timedBlockSFX = nullptr;
 
         static bool PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName);
         static void processHit(RE::Actor* actor, RE::HitData& hitData);
