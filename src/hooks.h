@@ -4,12 +4,24 @@ class hooks {
     public:
         static void Install() {
             SKSE::log::info("Installing Hooks...");
-            SKSE::log::info("Installing PlayerCharacter animation graph hook...");
+            SKSE::log::info("Installing PlayerCharacter notifyanimationgraph hook...");
 
-            REL::Relocation<uintptr_t> PlayerCharacter_IAnimationGraphManagerHolderVtbl{RE::VTABLE_PlayerCharacter[3]};
-            _PC_NotifyAnimationGraph = PlayerCharacter_IAnimationGraphManagerHolderVtbl.write_vfunc(0x1, PC_NotifyAnimationGraph);
-
+            {
+                 REL::Relocation<uintptr_t> PlayerCharacter_IAnimationGraphManagerHolderVtbl{RE::VTABLE_PlayerCharacter[3]};
+                _PC_NotifyAnimationGraph = PlayerCharacter_IAnimationGraphManagerHolderVtbl.write_vfunc(0x1, PC_NotifyAnimationGraph);
+            }
+           
             SKSE::log::info("PlayerCharacter animation graph hook installed successfully");
+
+            //hitdata hook from valhalla combat & stbl
+            SKSE::log::info("Installing Attempting to install processHit hook...");
+            {
+                auto& trampoline = SKSE::GetTrampoline();
+			    _ProcessHit = trampoline.write_call<5>(REL::RelocationID(37673, 38627).address()+ REL::Relocate(0x3C0, 0x4A8), processHit);
+            }
+            
+            SKSE::log::info("Installed processHit hook. ");
+            SKSE::log::info("Finished Installing Hooks. ");
         }
 
         static bool LoadForms() {
@@ -20,7 +32,8 @@ class hooks {
             timeBlockBuffSpell = dataHandler->LookupForm<RE::SpellItem>(0x80B, "SimpleTimedBlock.esp");
             timed_block_explosion = dataHandler->LookupForm<RE::BGSExplosion>(0x805, "SimpleTimedBlock.esp");
             timed_block_counter_glob = dataHandler->LookupForm<RE::TESGlobal>(0x80E, "SimpleTimedBlock.esp");
-
+            timedBlockSFX = dataHandler->LookupForm<RE::BGSSoundDescriptorForm>(0x807, "SimpleTimedBlock.esp");
+            
             if (!timedBlockWindowSpell || !timedBlockWindowMGEF || !timedBlockStaggerSpell || !timeBlockBuffSpell) {
                 SKSE::log::error("Failed to load spell forms: timedBlockWindowSpell={}, timedBlockWindowMGEF={}, timedBlockStaggerSpell={}, timeBlockBuffSpell={}", 
                     static_cast<void*>(timedBlockWindowSpell), static_cast<void*>(timedBlockWindowMGEF), static_cast<void*>(timedBlockStaggerSpell), static_cast<void*>(timeBlockBuffSpell));
@@ -32,14 +45,18 @@ class hooks {
         }
 
     private:
+        
         static inline RE::SpellItem* timedBlockWindowSpell = nullptr;
         static inline RE::EffectSetting* timedBlockWindowMGEF = nullptr;
         static inline RE::SpellItem* timedBlockStaggerSpell = nullptr;
         static inline RE::SpellItem* timeBlockBuffSpell = nullptr;
         static inline RE::BGSExplosion* timed_block_explosion = nullptr;
         static inline RE::TESGlobal* timed_block_counter_glob = nullptr;
+        static inline RE::BGSSoundDescriptorForm* timedBlockSFX = nullptr;
 
         static bool PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName);
+        static void processHit(RE::Actor* actor, RE::HitData& hitData);
         inline static REL::Relocation<decltype(PC_NotifyAnimationGraph)> _PC_NotifyAnimationGraph;
+        inline static REL::Relocation<decltype(processHit)> _ProcessHit;
 
 };

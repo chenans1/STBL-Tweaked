@@ -17,3 +17,27 @@ bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, co
     }
     return result;
 }
+
+void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
+    auto player =  RE::PlayerCharacter::GetSingleton();
+    if (actor == player) {
+        if (!hitData.flags.any(RE::HitData::Flag::kBlocked)) {
+            SKSE::log::info("[processHit] Non-blocked hitData");
+            return _ProcessHit(actor, hitData);
+        }
+        if (auto* magicTarget = player->GetMagicTarget()) {
+            if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
+                SKSE::log::info("[processHit] Player has window MGEF, blocking all damage. percentBlocked = {}", hitData.percentBlocked);
+                hitData.totalDamage = 0.0f;
+                hitData.stagger = 0.0f;
+                hitData.criticalDamageMult = 0.0f;
+                hitData.percentBlocked = 1.0f;
+                hitData.physicalDamage = 0.0f;
+                //apply sfx/vfx
+                player->PlaceObjectAtMe(hooks::timed_block_explosion, false);
+                utils::play_sound(actor, hooks::timedBlockSFX);
+            }
+        }
+    }
+    return _ProcessHit(actor, hitData);
+}

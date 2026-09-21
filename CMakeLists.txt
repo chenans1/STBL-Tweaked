@@ -10,7 +10,7 @@ set(ENABLE_SKYRIM_VR OFF CACHE BOOL "" FORCE)
 project(simple-timed-block VERSION 0.0.1 LANGUAGES CXX)
 
 #set(OUTPUT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/output")
-set(OUTPUT_FOLDER "$D:/Skyrim SE MO2/mods/simple timed block improvements")
+set(OUTPUT_FOLDER "D:/Skyrim SE MO2/mods/simple timed block improvements")
 
 add_subdirectory(extern/CommonLibVR-ng)
 include(extern/CommonLibVR-ng/cmake/CommonLibSSE.cmake)

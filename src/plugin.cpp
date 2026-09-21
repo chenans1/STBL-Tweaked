@@ -45,14 +45,17 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     auto version = plugin->GetVersion();
     log::info("{} {} is loading...", plugin->GetName(), version);
     SKSE::Init(skse);
-    hooks::Install();
+    SKSE::AllocTrampoline(14);
+    // hooks::Install();
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* msg) {
         switch (msg->type) {
             // case SKSE::MessagingInterface::kPostLoad:
-            //     settings::RegisterMenu();
+            //     // settings::RegisterMenu();
+            //     // hooks::Install(); //for maxsu poise compat
             //     break;
             case SKSE::MessagingInterface::kDataLoaded:
                 hooks::LoadForms();
+                hooks::Install(); //for maxsu poise compat
                 break;
             }
     });
