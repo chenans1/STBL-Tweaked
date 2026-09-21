@@ -30,11 +30,11 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         if (auto* magicTarget = player->GetMagicTarget()) {
             if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
                 const auto cfg = settings::Get();
-                // SKSE::log::info("[processHit] Player has window MGEF, blocking all damage. percentBlocked = {}", hitData.percentBlocked);
                 if (cfg.preventAllDamage) {
                     hitData.totalDamage = 0.0f;
                     hitData.criticalDamageMult = 0.0f;
                     hitData.physicalDamage = 0.0f;
+                    // SKSE::log::info("[processHit] Player has window MGEF, prevent all damage enabled = {}", hitData.percentBlocked);
                 } else {
                     hitData.totalDamage *= cfg.additionalDamageReduction;
                     hitData.criticalDamageMult *= cfg.additionalDamageReduction;
@@ -43,11 +43,15 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
                 
                 hitData.percentBlocked = 1.0f;
                 hitData.stagger = 0.0f;
+                if (cfg.AOEStaggerEnabled) {
+                    utils::StaggerNearby(actor, cfg.AOEStaggerRadius);
+                }
+
                 //apply sfx/vfx
-                if (cfg.applyTimedBlockSFX) {
+                if (cfg.applyTimedBlockVFX) {
                     player->PlaceObjectAtMe(hooks::timed_block_explosion, false);
                 }
-                if (cfg.applyTimedBlockVFX) {
+                if (cfg.applyTimedBlockSFX) {
                     utils::play_sound(actor, hooks::timedBlockSFX);
                 }
             }
