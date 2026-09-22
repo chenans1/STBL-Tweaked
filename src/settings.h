@@ -17,6 +17,7 @@ namespace settings {
         bool AOEStaggerEnabled = true;
         float AOEStaggerRadius = 256.0f;
         
+        bool attackerHistopEnabled = true;
         float attackerSlowDownMult = 0.05f;
         float attackerSlowdownDuration = 0.5f;
     };
@@ -39,7 +40,8 @@ namespace settings {
 
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
         setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
-        
+
+        setting_definition<bool>{ "attackerHistopEnabled", &settings::config::attackerHistopEnabled },
         setting_definition<float>{ "attackerSlowDownMult", &settings::config::attackerSlowDownMult },
         setting_definition<float>{ "attackerSlowdownDuration", &settings::config::attackerSlowdownDuration },
     };

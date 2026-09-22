@@ -67,6 +67,21 @@ namespace utils {
         });
     }   
 
+    inline static bool hasMGEF(RE::Actor* actor, RE::EffectSetting* a_effect) {
+        if (!actor || !a_effect) {
+            return false;
+        }
+        auto* magicTarget = actor->GetMagicTarget();
+        if (!magicTarget) {
+            return false;
+        }
+
+        if (magicTarget->HasMagicEffect(a_effect)) {
+            return true;
+        }
+        return false;
+    }   
+    
     // inline static bool ApplyWithDurationOverride(float duration, RE::SpellItem* a_spell, RE::EffectSetting* a_effect) {
     //     if (!a_spell || !a_effect) {
     //         return false;
