@@ -108,9 +108,12 @@ namespace form_config {
             ini.SetValue(coreSection, "StaggerSpell", defaultStaggerSpell);
             ini.SetValue(coreSection, "TimedBlockExplosion", defaultExplosion);
             ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
-            ini.SetValue(perkSection, "Melee", "");
-            ini.SetValue(perkSection, "Spell", "");
-            ini.SetValue(perkSection, "Arrow", "");
+            ini.SetValue(perkSection, "ShieldMelee", "");
+            ini.SetValue(perkSection, "ShieldSpell", "");
+            ini.SetValue(perkSection, "ShieldArrow", "");
+            ini.SetValue(perkSection, "NonShieldMelee", "");
+            ini.SetValue(perkSection, "NonShieldSpell", "");
+            ini.SetValue(perkSection, "NonShieldArrow", "");
             ini.SetValue(perkSection, "Stagger", "");
 
             std::error_code ec;
@@ -130,6 +133,13 @@ namespace form_config {
             const char* key,
             const char* fallback = "") {
             return ini.GetValue(section, key, fallback);
+        }
+
+        const char* readPerkSetting(const CSimpleIniA& ini, const char* key, const char* legacyKey) {
+            if (const auto* value = ini.GetValue(perkSection, key, nullptr)) {
+                return value;
+            }
+            return ini.GetValue(perkSection, legacyKey, "");
         }
     }
 
@@ -153,9 +163,12 @@ namespace form_config {
         loaded.core.timedBlockExplosion = loadForm<RE::BGSExplosion>(readSetting(ini, coreSection, "TimedBlockExplosion", defaultExplosion), "Core/TimedBlockExplosion");
         loaded.core.timedBlockSound = loadForm<RE::BGSSoundDescriptorForm>(readSetting(ini, coreSection, "TimedBlockSound", defaultSound), "Core/TimedBlockSound");
 
-        loaded.perks.melee = loadPerkRequirement(readSetting(ini, perkSection, "Melee"), "melee");
-        loaded.perks.spell = loadPerkRequirement(readSetting(ini, perkSection, "Spell"), "spell");
-        loaded.perks.arrow = loadPerkRequirement(readSetting(ini, perkSection, "Arrow"), "arrow");
+        loaded.perks.shield.melee = loadPerkRequirement(readPerkSetting(ini, "ShieldMelee", "Melee"), "shield melee");
+        loaded.perks.shield.spell = loadPerkRequirement(readPerkSetting(ini, "ShieldSpell", "Spell"), "shield spell");
+        loaded.perks.shield.arrow = loadPerkRequirement(readPerkSetting(ini, "ShieldArrow", "Arrow"), "shield arrow");
+        loaded.perks.nonShield.melee = loadPerkRequirement(readPerkSetting(ini, "NonShieldMelee", "Melee"), "non-shield melee");
+        loaded.perks.nonShield.spell = loadPerkRequirement(readPerkSetting(ini, "NonShieldSpell", "Spell"), "non-shield spell");
+        loaded.perks.nonShield.arrow = loadPerkRequirement(readPerkSetting(ini, "NonShieldArrow", "Arrow"), "non-shield arrow");
         loaded.perks.stagger = loadPerkRequirement(readSetting(ini, perkSection, "Stagger"), "AOE stagger");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||

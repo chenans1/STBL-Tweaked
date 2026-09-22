@@ -42,7 +42,7 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     }
 
     auto* attacker = hitData.aggressor ? hitData.aggressor.get().get() : nullptr;
-    const auto result = timedBlockAPI->TryTriggerTimedBlock({STBL_API::AttackType::Melee, attacker, player, nullptr});
+    const auto result = timedBlockAPI->TryTriggerTimedBlock({STBL_API::AttackType::Melee, attacker, player});
 
     if (result.Triggered()) {
         hitData.totalDamage *= result.damageMultiplier;

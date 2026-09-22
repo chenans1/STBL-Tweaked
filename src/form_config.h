@@ -20,11 +20,15 @@ namespace form_config {
         RE::BGSSoundDescriptorForm* timedBlockSound = nullptr;
     };
 
-    struct PerkRequirements {
-        // Damage-prevention requirements by attack type.
+    struct AttackTypePerkRequirements {
         PerkRequirement melee;
         PerkRequirement spell;
         PerkRequirement arrow;
+    };
+
+    struct PerkRequirements {
+        AttackTypePerkRequirements shield;
+        AttackTypePerkRequirements nonShield;
 
         // Independent requirement for staggering nearby actors.
         PerkRequirement stagger;

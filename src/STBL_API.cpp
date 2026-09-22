@@ -7,18 +7,29 @@
 namespace {
     using namespace STBL_API;
 
+    [[nodiscard]] bool isUsingShield(const RE::Actor* actor) {
+        if (!actor) {
+            return false;
+        }
+
+        const auto* leftHand = actor->GetEquippedObject(true);
+        const auto* armor = leftHand ? leftHand->As<RE::TESObjectARMO>() : nullptr;
+        return armor && armor->IsShield();
+    }
+
     [[nodiscard]] bool checkFullyBlockedRequirement(AttackType attackType, const RE::Actor* actor) {
         const auto& perks = form_config::Get().perks;
+        const auto& attackPerks = isUsingShield(actor) ? perks.shield : perks.nonShield;
 
         switch (attackType) {
             case STBL_API::AttackType::Melee:
-                return perks.melee.IsMetBy(actor);
+                return attackPerks.melee.IsMetBy(actor);
 
             case STBL_API::AttackType::Spell:
-                return perks.spell.IsMetBy(actor);
+                return attackPerks.spell.IsMetBy(actor);
 
             case STBL_API::AttackType::Arrow:
-                return perks.arrow.IsMetBy(actor);
+                return attackPerks.arrow.IsMetBy(actor);
 
             default:
                 return false;

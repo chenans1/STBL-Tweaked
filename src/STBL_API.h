@@ -1,26 +1,26 @@
 #pragma once
 
 #include <cstdint>
-
+/*
+TryTriggerTimedBlock is called when a timed block occurs - external plugin consumer must still handle damage reduction.
+The try trigger checks if the timed block window is active and if it is, apply stagger/spell/timed block mod events.
+*/
 namespace RE {
     class Actor;
     class TESObjectREFR;
 }
 namespace STBL_API {
-    enum class InterfaceVersion : std::uint8_t
-    {
+    enum class InterfaceVersion : std::uint8_t {
         V1 = 1
     };
 
-    enum class AttackType : std::uint8_t
-    {
+    enum class AttackType : std::uint8_t {
         Melee = 0,
         Spell = 1,
         Arrow = 2
     };
 
-    enum class TimedBlockOutcome : std::uint8_t
-    {
+    enum class TimedBlockOutcome : std::uint8_t {
         NotTriggered = 0,
         Reduced = 1,
         FullyBlocked = 2
@@ -32,7 +32,7 @@ namespace STBL_API {
         RE::Actor* defender = nullptr;
 
         //optional
-        RE::TESObjectREFR* source = nullptr;
+        //RE::TESObjectREFR* source = nullptr;
     };
 
     struct TimedBlockResult {
