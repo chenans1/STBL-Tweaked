@@ -82,6 +82,37 @@ namespace utils {
         return false;
     }   
     
+    inline static float safelyAddWithCap(const float value, const float increment, const float cap) {
+        return std::min(value + increment, cap);
+    }
+
+    inline void incrementGlobalTBCounter(){
+        if (hooks::timed_block_counter_glob) {
+            hooks::timed_block_counter_glob->value = safelyAddWithCap(hooks::timed_block_counter_glob->value, 1.0f, 5000.0f);
+        }
+    }
+
+    // inline bool ieq(char a, char b) noexcept {
+    //     return std::tolower((unsigned char)a) == std::tolower((unsigned char)b);
+    // }
+
+    // inline static bool istarts_with(std::string_view s, std::string_view prefix) noexcept {
+    //     if (s.size() < prefix.size()) return false;
+
+    //     for (size_t i = 0; i < prefix.size(); ++i) {
+    //         if (!ieq(s[i], prefix[i])) return false;
+    //     }
+    //     return true;
+    // }
+
+    
+    // inline static std::string_view basename_view(std::string_view path) noexcept {
+    //     const auto p1 = path.find_last_of('\\');
+    //     const auto p2 = path.find_last_of('/');
+    //     const auto pos = (p1 == std::string_view::npos) ? p2 : (p2 == std::string_view::npos) ? p1 : (std::max)(p1, p2);
+    //     return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
+    // }
+
     // inline static bool ApplyWithDurationOverride(float duration, RE::SpellItem* a_spell, RE::EffectSetting* a_effect) {
     //     if (!a_spell || !a_effect) {
     //         return false;
