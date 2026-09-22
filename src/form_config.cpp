@@ -112,7 +112,7 @@ namespace form_config {
             ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
             ini.SetValue(perkSection, "Melee", "");
             ini.SetValue(perkSection, "Spell", "");
-            ini.SetValue(perkSection, "Projectile", "");
+            ini.SetValue(perkSection, "Arrow", "");
 
             std::error_code ec;
             std::filesystem::create_directories(std::filesystem::path(requirementsPath).parent_path(), ec);
@@ -156,7 +156,7 @@ namespace form_config {
 
         loaded.perks.melee = loadPerkRequirement(readSetting(ini, perkSection, "Melee"), "melee");
         loaded.perks.spell = loadPerkRequirement(readSetting(ini, perkSection, "Spell"), "spell");
-        loaded.perks.projectile = loadPerkRequirement(readSetting(ini, perkSection, "Projectile"), "projectile");
+        loaded.perks.arrow = loadPerkRequirement(readSetting(ini, perkSection, "Arrow"), "arrow");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
             !loaded.core.timedBlockExplosion || !loaded.core.timedBlockSound) {

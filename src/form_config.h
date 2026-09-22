@@ -23,7 +23,7 @@ namespace form_config {
     struct PerkRequirements {
         PerkRequirement melee;
         PerkRequirement spell;
-        PerkRequirement projectile;
+        PerkRequirement arrow;
     };
 
     struct Config {
