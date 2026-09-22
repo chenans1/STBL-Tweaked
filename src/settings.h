@@ -8,11 +8,11 @@ namespace settings {
         bool applyTimedBlockSFX = true;
         
         bool preventAllDamage = true;
-        
+
         //bypasses the blockcap limit intentionally
-        float additionalDamageReduction = 0.5;
-        float additionalDamageReductionArrow = 0.7;
-        float additionalDamageReductionSpell = 0.7;
+        float additionalDamageReduction = 0.5f;
+        float additionalDamageReductionArrow = 0.7f;
+        float additionalDamageReductionSpell = 0.7f;
 
         float timedBlockWindow = 0.33f;
 

@@ -15,6 +15,11 @@ class hooks {
         static inline RE::SpellItem* attackerHitstopSpell = nullptr;
         static inline RE::EffectSetting* attackerHitStopMGEF = nullptr;
 
+        //caster by blocker on attacker.
+        static inline RE::SpellItem* timedBlockMeleeAttackerSpell = nullptr;
+        static inline RE::SpellItem* timedBlockArrowAttackerSpell = nullptr;
+        static inline RE::SpellItem* timedBlockSpellAttackerSpell = nullptr;
+
         static void Install() {
             SKSE::log::info("Installing Hooks...");
             SKSE::log::info("Installing PlayerCharacter notifyanimationgraph hook...");
@@ -63,6 +68,9 @@ class hooks {
             attackerHitstopSpell = dataHandler->LookupForm<RE::SpellItem>(0x801, "SimpleTimedBlockTweaked.esp");
             attackerHitStopMGEF = dataHandler->LookupForm<RE::EffectSetting>(0x800, "SimpleTimedBlockTweaked.esp");
 
+            timedBlockMeleeAttackerSpell = dataHandler->LookupForm<RE::SpellItem>(0x803, "SimpleTimedBlockTweaked.esp");
+            timedBlockArrowAttackerSpell = dataHandler->LookupForm<RE::SpellItem>(0x805, "SimpleTimedBlockTweaked.esp");
+            timedBlockSpellAttackerSpell = dataHandler->LookupForm<RE::SpellItem>(0x807, "SimpleTimedBlockTweaked.esp");
 
             if (!timedBlockWindowSpell || !timedBlockWindowMGEF || !timedBlockStaggerSpell || !timeBlockBuffSpell) {
                 SKSE::log::error("Failed to load spell forms: timedBlockWindowSpell={}, timedBlockWindowMGEF={}, timedBlockStaggerSpell={}, timeBlockBuffSpell={}", 
@@ -74,10 +82,18 @@ class hooks {
                     static_cast<void*>(timed_block_explosion), static_cast<void*>(timed_block_counter_glob), static_cast<void*>(timedBlockSFX));
                 return false;
             }
+            if (!timedBlockMeleeAttackerSpell|| !timedBlockArrowAttackerSpell || !timedBlockSpellAttackerSpell) {
+                SKSE::log::error("Failed to load effect forms: timedBlockMeleeAttackerSpell={}, timedBlockArrowAttackerSpell={}, timedBlockSpellAttackerSpell={}", 
+                    static_cast<void*>(timedBlockMeleeAttackerSpell), static_cast<void*>(timedBlockArrowAttackerSpell), static_cast<void*>(timedBlockSpellAttackerSpell));
+                return false;
+            }
             SKSE::log::info("Correctly loaded spell forms: timedBlockWindowSpell={:08X}, timedBlockWindowMGEF={:08X}, timedBlockStaggerSpell={:08X}, timeBlockBuffSpell={:08X}", 
                     timedBlockWindowSpell->GetFormID(), timedBlockWindowMGEF->GetFormID(), timedBlockStaggerSpell->GetFormID(), timeBlockBuffSpell->GetFormID());
             SKSE::log::info("Correctly loaded effect forms: timed_block_explosion={:08X}, timed_block_counter_glob={:08X}, timedBlockSFX={:08X} , attackerHitstopSpell={:08X}, attackerHitStopMGEF={:08X}", 
                    timed_block_explosion->GetFormID(), timed_block_counter_glob->GetFormID(), timedBlockSFX->GetFormID(), attackerHitstopSpell->GetFormID(), attackerHitStopMGEF->GetFormID());
+
+            SKSE::log::info("Correctly loaded attacker->blocker spell forms: timedBlockMeleeAttackerSpell={:08X}, timedBlockArrowAttackerSpell={:08X}, timedBlockSpellAttackerSpell={:08X}", 
+                    timedBlockMeleeAttackerSpell->GetFormID(), timedBlockArrowAttackerSpell->GetFormID(), timedBlockSpellAttackerSpell->GetFormID());
             return true;
         }
 
