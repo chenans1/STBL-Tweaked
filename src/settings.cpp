@@ -146,8 +146,10 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("Enable Sound Effects", &current.applyTimedBlockSFX);
         changed |= ImGuiMCP::Checkbox("Enable Visual Effects", &current.applyTimedBlockVFX);
         changed |= ImGuiMCP::Checkbox("Prevent All Damage", &current.preventAllDamage);
+        changed |= ImGuiMCP::Checkbox("Prevent All Spell Damage", &current.preventAllDamageSpells);
+        changed |= ImGuiMCP::Checkbox("Prevent All Arrow Damage", &current.preventAllDamageArrows);
         changed |= ImGuiMCP::SliderFloat("Timed Block Damage Mult", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
-
+        
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
 

@@ -49,8 +49,7 @@ namespace form_config {
                 SKSE::log::error("[forms] Invalid {} value '{}'; expected <plugin> ~ 0x<FormID>", context, setting);
                 return false;
             }
-            const bool hasHexPrefix = formIDText.size() >= 2 && formIDText[0] == '0' &&
-                                      (formIDText[1] == 'x' || formIDText[1] == 'X');
+            const bool hasHexPrefix = formIDText.size() >= 2 && formIDText[0] == '0' && (formIDText[1] == 'x' || formIDText[1] == 'X');
             if (hasHexPrefix) {
                 formIDText.remove_prefix(2);
             }

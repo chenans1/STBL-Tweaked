@@ -8,9 +8,12 @@ namespace settings {
         bool applyTimedBlockSFX = true;
         
         bool preventAllDamage = true;
+        
         //bypasses the blockcap limit intentionally
         float additionalDamageReduction = 0.5;
-        
+        float additionalDamageReductionArrow = 0.7;
+        float additionalDamageReductionSpell = 0.7;
+
         float timedBlockWindow = 0.33f;
 
         bool AOEStaggerEnabled = true;
@@ -20,6 +23,8 @@ namespace settings {
         float attackerSlowDownMult = 0.05f;
         float attackerSlowdownDuration = 0.5f;
 
+        bool preventAllDamageArrows = true;
+        bool preventAllDamageSpells = true;
     };
     
     template <class T>
@@ -44,6 +49,9 @@ namespace settings {
         setting_definition<bool>{ "attackerHistopEnabled", &settings::config::attackerHistopEnabled },
         setting_definition<float>{ "attackerSlowDownMult", &settings::config::attackerSlowDownMult },
         setting_definition<float>{ "attackerSlowdownDuration", &settings::config::attackerSlowdownDuration },
+
+        setting_definition<bool>{ "preventAllDamageArrows", &settings::config::preventAllDamageArrows },
+        setting_definition<bool>{ "preventAllDamageSpells", &settings::config::preventAllDamageSpells },
     };
 
     config Get();
