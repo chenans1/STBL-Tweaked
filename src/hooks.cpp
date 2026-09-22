@@ -49,7 +49,7 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         if (auto* magicTarget = player->GetMagicTarget()) {
             if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
                 const auto cfg = settings::Get();
-                // utils::SendTBModEvent()
+                utils::incrementGlobalTBCounter();
                 if (cfg.preventAllDamage) {
                     hitData.totalDamage = 0.0f;
                     hitData.criticalDamageMult = 0.0f;
@@ -75,13 +75,14 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
                 if (cfg.applyTimedBlockSFX) {
                     utils::play_sound(actor, hooks::timedBlockSFX);
                 }
-
-                if (cfg.attackerHistopEnabled) {
-                    auto* attacker = hitData.aggressor.get().get();
-                    if (attacker) {
-                        applyHitstopSpell(attacker, cfg.attackerSlowdownDuration);
-                    }
+                auto* attacker = hitData.aggressor ? hitData.aggressor.get().get() : nullptr;
+                if (!attacker) {
+                    return;
                 }
+                if (cfg.attackerHistopEnabled) {
+                    applyHitstopSpell(attacker, cfg.attackerSlowdownDuration);
+                }
+                utils::SendTBModEvent(actor, attacker);
             }
         }
     }

@@ -12,6 +12,7 @@
 
 namespace settings {
     constexpr auto iniPath = "Data/SKSE/Plugins/STBLimproved.ini";
+    constexpr auto requirementsPath = "Data/SKSE/Plugins/STBLrequirements.ini";
     constexpr auto general = "General";
 
     std::mutex configMutex;
