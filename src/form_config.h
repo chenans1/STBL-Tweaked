@@ -21,9 +21,13 @@ namespace form_config {
     };
 
     struct PerkRequirements {
+        // Damage-prevention requirements by attack type.
         PerkRequirement melee;
         PerkRequirement spell;
         PerkRequirement arrow;
+
+        // Independent requirement for staggering nearby actors.
+        PerkRequirement stagger;
     };
 
     struct Config {

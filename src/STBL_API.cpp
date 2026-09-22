@@ -25,14 +25,28 @@ namespace {
         }
     }
 
-    [[nodiscard]] bool applyTimedBlockEffects(RE::Actor* defender, RE::Actor* attacker, AttackType attackType) {
-        if (!defender) {
-            return false;
+    [[nodiscard]] RE::SpellItem* getAttackerSpell(AttackType attackType) {
+        switch (attackType) {
+            case AttackType::Melee:
+                return hooks::timedBlockMeleeAttackerSpell;
+            case AttackType::Spell:
+                return hooks::timedBlockSpellAttackerSpell;
+            case AttackType::Arrow:
+                return hooks::timedBlockArrowAttackerSpell;
+            default:
+                return nullptr;
         }
+    }
+
+    void applyTimedBlockEffects(RE::Actor* defender, RE::Actor* attacker, AttackType attackType) {
+        if (!defender) {
+            return;
+        }
+
         utils::incrementGlobalTBCounter();
         utils::ApplySpell(defender, defender, hooks::timeBlockBuffSpell);
+
         const auto cfg = settings::Get();
-        //apply sfx/vfx
         if (cfg.applyTimedBlockVFX) {
             defender->PlaceObjectAtMe(hooks::timed_block_explosion, false);
         }
@@ -41,10 +55,17 @@ namespace {
             utils::play_sound(defender, hooks::timedBlockSFX);
         }
 
+        const bool hasStaggerPerk = form_config::Get().perks.stagger.IsMetBy(defender);
+        if (cfg.AOEStaggerEnabled && hasStaggerPerk) {
+            utils::StaggerNearby(defender, cfg.AOEStaggerRadius);
+        }
+
         if (!attacker) {
             return;
         }
-        
+
+        utils::ApplySpell(defender, attacker, getAttackerSpell(attackType));
+
         if (cfg.attackerHistopEnabled) {
             utils::applyHitstopSpell(attacker, defender, cfg.attackerSlowdownDuration);
         }
@@ -71,27 +92,27 @@ namespace {
             result.outcome = TimedBlockOutcome::Reduced;
             result.damageMultiplier = std::clamp(config.additionalDamageReduction, 0.0f, 1.0f);
         }
-        applyTimedBlockEffects(request.attacker, request.defender, request.attackType);
+        applyTimedBlockEffects(request.defender, request.attacker, request.attackType);
         return result;
     }
 
     class TimedBlockAPI final : public STBL {
         public:
-            STBL_API::TimedBlockResult TryTriggerTimedBlock(
-                const STBL_API::TimedBlockRequest& request) noexcept override {
-                    return TryTrigger(request);
+            STBL_API::TimedBlockResult TryTriggerTimedBlock(const STBL_API::TimedBlockRequest& request) noexcept override {
+                return TryTrigger(request);
             }
     };
 
     TimedBlockAPI api;
 
-    extern "C" __declspec(dllexport)
-    void* RequestPluginAPI(const STBL_API::InterfaceVersion version) noexcept {
-        switch (version) {
-            case STBL_API::InterfaceVersion::V1:
-                return &api;
-            default:
-                return nullptr;
-        }
+}
+
+extern "C" __declspec(dllexport)
+void* RequestPluginAPI(const STBL_API::InterfaceVersion version) noexcept {
+    switch (version) {
+        case STBL_API::InterfaceVersion::V1:
+            return &api;
+        default:
+            return nullptr;
     }
 }

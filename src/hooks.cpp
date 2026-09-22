@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "hooks.h"
+#include "STBL_API.h"
 #include "utils.h"
 #include "settings.h"
 
@@ -8,17 +9,6 @@ void applyWindowDuration() {
         const auto config = settings::Get();
         hooks::timedBlockWindowMGEF->data.taperDuration = std::clamp(config.timedBlockWindow, 0.0f, 1.0f);
     }
-}
-
-void applyHitstopSpell(RE::Actor* attacker, float duration) {
-    if (!attacker) {
-        return;
-    }
-    // SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
-    if (hooks::attackerHitStopMGEF) {
-        hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
-    }
-    utils::ApplySpell(attacker, attacker, hooks::attackerHitstopSpell);
 }
 
 //doing this allows for native dual wield block key compat. 
@@ -40,57 +30,34 @@ bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, co
 }
 
 void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
-    auto player =  RE::PlayerCharacter::GetSingleton();
-    if (actor == player) {
-        if (!hitData.flags.any(RE::HitData::Flag::kBlocked)) {
-            // SKSE::log::info("[processHit] Non-blocked hitData");
-            return _ProcessHit(actor, hitData);
-        }
-        if (auto* magicTarget = player->GetMagicTarget()) {
-            if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
-                const auto cfg = settings::Get();
-                const bool hasRequiredPerk = form_config::Get().perks.melee.IsMetBy(player);
-                utils::incrementGlobalTBCounter();
-                if (cfg.preventAllDamage && hasRequiredPerk) {
-                    hitData.totalDamage = 0.0f;
-                    hitData.criticalDamageMult = 0.0f;
-                    hitData.physicalDamage = 0.0f;
-                    // SKSE::log::info("[processHit] Player has window MGEF, prevent all damage enabled = {}", hitData.percentBlocked);
-                } else {
-                    hitData.totalDamage *= cfg.additionalDamageReduction;
-                    hitData.criticalDamageMult *= cfg.additionalDamageReduction;
-                    hitData.physicalDamage *= cfg.additionalDamageReduction;
-                }
-                
-                hitData.percentBlocked = 1.0f;
-                hitData.stagger = 0.0f;
-                
-                if (cfg.AOEStaggerEnabled && hasRequiredPerk) {
-                    utils::StaggerNearby(actor, cfg.AOEStaggerRadius);
-                }
-                
-                //apply stbl's self-buff spell
-                utils::ApplySpell(actor, actor, hooks::timeBlockBuffSpell);
-
-                //apply sfx/vfx
-                if (cfg.applyTimedBlockVFX) {
-                    player->PlaceObjectAtMe(hooks::timed_block_explosion, false);
-                }
-
-                if (cfg.applyTimedBlockSFX) {
-                    utils::play_sound(actor, hooks::timedBlockSFX);
-                }
-                auto* attacker = hitData.aggressor ? hitData.aggressor.get().get() : nullptr;
-                if (!attacker) {
-                    return;
-                }
-                if (cfg.attackerHistopEnabled) {
-                    applyHitstopSpell(attacker, cfg.attackerSlowdownDuration);
-                }
-                utils::SendTBModEvent(actor, attacker);
-            }
-        }
+    auto* player = RE::PlayerCharacter::GetSingleton();
+    if (actor != player || !hitData.flags.any(RE::HitData::Flag::kBlocked)) {
+        return _ProcessHit(actor, hitData);
     }
+
+    static auto* timedBlockAPI = STBL_API::RequestInterface();
+    if (!timedBlockAPI) {
+        SKSE::log::error("[processHit] Could not acquire the local STBL API");
+        return _ProcessHit(actor, hitData);
+    }
+
+    auto* attacker = hitData.aggressor ? hitData.aggressor.get().get() : nullptr;
+    const auto result = timedBlockAPI->TryTriggerTimedBlock({STBL_API::AttackType::Melee, attacker, player, nullptr});
+
+    if (result.Triggered()) {
+        hitData.totalDamage *= result.damageMultiplier;
+        hitData.criticalDamageMult *= result.damageMultiplier;
+        hitData.physicalDamage *= result.damageMultiplier;
+        hitData.percentBlocked = 1.0f;
+        hitData.stagger = 0.0f;
+
+        // if (result.FullyBlocked()) {
+        //     hitData.totalDamage = 0.0f;
+        //     hitData.criticalDamageMult = 0.0f;
+        //     hitData.physicalDamage = 0.0f;
+        // }
+    }
+
     return _ProcessHit(actor, hitData);
 }
 

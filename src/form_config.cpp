@@ -93,9 +93,7 @@ namespace form_config {
 
             auto* perk = loadForm<RE::BGSPerk>(setting, context);
             if (!perk) {
-                SKSE::log::error(
-                    "[perk requirement] Invalid {} requirement; no perk will be required",
-                    context);
+                SKSE::log::error("[perk requirement] Invalid {} requirement; no perk will be required", context);
                 return {};
             }
 
@@ -113,6 +111,7 @@ namespace form_config {
             ini.SetValue(perkSection, "Melee", "");
             ini.SetValue(perkSection, "Spell", "");
             ini.SetValue(perkSection, "Arrow", "");
+            ini.SetValue(perkSection, "Stagger", "");
 
             std::error_code ec;
             std::filesystem::create_directories(std::filesystem::path(requirementsPath).parent_path(), ec);
@@ -157,6 +156,7 @@ namespace form_config {
         loaded.perks.melee = loadPerkRequirement(readSetting(ini, perkSection, "Melee"), "melee");
         loaded.perks.spell = loadPerkRequirement(readSetting(ini, perkSection, "Spell"), "spell");
         loaded.perks.arrow = loadPerkRequirement(readSetting(ini, perkSection, "Arrow"), "arrow");
+        loaded.perks.stagger = loadPerkRequirement(readSetting(ini, perkSection, "Stagger"), "AOE stagger");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
             !loaded.core.timedBlockExplosion || !loaded.core.timedBlockSound) {
