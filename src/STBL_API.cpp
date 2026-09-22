@@ -7,6 +7,17 @@
 namespace {
     using namespace STBL_API;
 
+    [[nodiscard]] bool isSupportedAttackType(AttackType attackType) {
+        switch (attackType) {
+            case AttackType::Melee:
+            case AttackType::Spell:
+            case AttackType::Arrow:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     [[nodiscard]] bool isUsingShield(const RE::Actor* actor) {
         if (!actor) {
             return false;
@@ -83,9 +94,9 @@ namespace {
         utils::SendTBModEvent(defender, attacker);
     }
 
-    TimedBlockResult TryTrigger(const TimedBlockRequest& request) {
+    TimedBlockResult evaluateTimedBlock(const TimedBlockRequest& request) {
         TimedBlockResult result{};
-        if (!request.defender) {
+        if (!request.defender || !isSupportedAttackType(request.attackType)) {
             return result;
         }
 
@@ -103,14 +114,30 @@ namespace {
             result.outcome = TimedBlockOutcome::Reduced;
             result.damageMultiplier = std::clamp(config.additionalDamageReduction, 0.0f, 1.0f);
         }
-        applyTimedBlockEffects(request.defender, request.attacker, request.attackType);
         return result;
     }
 
     class TimedBlockAPI final : public STBL {
         public:
+            STBL_API::TimedBlockResult CanTimedBlock(const STBL_API::TimedBlockRequest& request) noexcept override {
+                return evaluateTimedBlock(request);
+            }
+
+            bool TriggerTimedBlock(const STBL_API::TimedBlockRequest& request) noexcept override {
+                if (!evaluateTimedBlock(request).Triggered()) {
+                    return false;
+                }
+
+                applyTimedBlockEffects(request.defender, request.attacker, request.attackType);
+                return true;
+            }
+
             STBL_API::TimedBlockResult TryTriggerTimedBlock(const STBL_API::TimedBlockRequest& request) noexcept override {
-                return TryTrigger(request);
+                auto result = evaluateTimedBlock(request);
+                if (result.Triggered()) {
+                    applyTimedBlockEffects(request.defender, request.attacker, request.attackType);
+                }
+                return result;
             }
     };
 
