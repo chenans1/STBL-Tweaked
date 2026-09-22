@@ -10,10 +10,10 @@ namespace utils {
 
         if (auto* caster = a_caster->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)) {
             caster->CastSpellImmediate(a_spell, false, a_target, 1.0f, false, 0.0f, a_caster);
-            // if (const auto cfg = settings::Get().log) { 
-            SKSE::log::info("[ApplySpell]: Cast spell={} on target={} caster={}",  
-                static_cast<void*>(a_spell), static_cast<void*>(a_target), static_cast<void*>(a_caster));
-            // }
+            if (const auto cfg = settings::Get().log) { 
+                SKSE::log::info("[ApplySpell]: Cast spell={:08X} on target={:08X} caster={:08X}",  
+                    a_spell->GetFormID(), a_target ? a_target->GetFormID() : 0, a_caster ? a_caster->GetFormID() : 0);
+            }
             return true;
         }
         return false;
@@ -61,7 +61,7 @@ namespace utils {
             if (!actor || actor->IsDisabled() || !actor->Is3DLoaded() || actor == a_defender) {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
-            SKSE::log::info( "[Utils] Staggering={:08X} ", actor ? actor->GetFormID() : 0);
+            SKSE::log::info("[Utils] Staggering={:08X} ", actor ? actor->GetFormID() : 0);
             ApplySpell(a_defender, actor, hooks::timedBlockStaggerSpell);
             return RE::BSContainer::ForEachResult::kContinue;
         });
