@@ -34,11 +34,11 @@ class hooks {
             SKSE::log::info("Installed processHit hook. ");
             
             // anim speed hooks from simple timed block addons
-            SKSE::log::info("Installing Attempting to install update hook...");
+            SKSE::log::info("Installing NPC animation update hook...");
             {
                 _originalUpdate = trampoline.write_call<5>(REL::RelocationID(40436, 41453).address() + REL::Relocate(0x74, 0x74), UpdateAnimation);
             }
-            SKSE::log::info("Installing Attempting to installed update hook...");
+            SKSE::log::info("Installed animation update hooks.");
             //
             // SKSE::log::info("Installing Attempting to install hkbClip->Update() hook...");
             // { REL::Relocation<std::uintptr_t> vtblhkbClipGenerator{RE::VTABLE_hkbClipGenerator[0]};

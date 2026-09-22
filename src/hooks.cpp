@@ -87,3 +87,18 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     }
     return _ProcessHit(actor, hitData);
 }
+
+// This modifies only the animation routine's local delta time. It does not
+void applyHitstopToAnimationDelta(RE::Actor* actor, float& deltaTime) {
+    const auto config = settings::Get();
+    if (!config.attackerHistopEnabled || !utils::hasMGEF(actor, hooks::attackerHitStopMGEF)) {
+        return;
+    }
+    
+    deltaTime *= std::clamp(config.attackerSlowDownMult, 0.0f, 1.0f);
+}
+
+void hooks::UpdateAnimation(RE::Actor* a_this, float a_deltaTime) {
+    applyHitstopToAnimationDelta(a_this, a_deltaTime);
+    _originalUpdate(a_this, a_deltaTime);
+}
