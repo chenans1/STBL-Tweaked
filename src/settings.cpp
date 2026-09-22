@@ -20,8 +20,9 @@ namespace settings {
 
     float readFloat(const CSimpleIniA& ini, const char* section, const char* key, const float fallback) {
         const float value = static_cast<float>(ini.GetDoubleValue(section, key, fallback));
-        return std::isfinite(value) ? std::clamp(value, 0.0f, 1.0f) : fallback;
+        return std::isfinite(value) ? value : fallback;
     }
+
     bool readValue(const CSimpleIniA& ini, const char* section, const char* key, const bool fallback) {
         return ini.GetBoolValue(section, key, fallback);
     }
@@ -140,19 +141,19 @@ namespace settings {
     void __stdcall RenderMenuPage() {
         config current = Get();
         bool changed = false;
-        changed |= ImGuiMCP::SliderFloat("Timed Block Window", &current.timedBlockWindow, 0.0f, 1.0f, "%.01f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Window", &current.timedBlockWindow, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("Enable Sound Effects", &current.applyTimedBlockSFX);
         changed |= ImGuiMCP::Checkbox("Enable Visual Effects", &current.applyTimedBlockVFX);
         changed |= ImGuiMCP::Checkbox("Prevent All Damage", &current.preventAllDamage);
-        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Mult", &current.additionalDamageReduction, 0.0f, 1.0f, "%.1f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Mult", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
 
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
-        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.1f");
-        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.1f");
+        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.2f");
         ImGuiMCP::Separator();
         changed |= ImGuiMCP::Checkbox("Enable diagnostic logging", &current.log);
         FinishMenuPage(current, changed);

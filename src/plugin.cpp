@@ -54,6 +54,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
                 settings::RegisterMenu();
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
+                settings::Load();
                 hooks::LoadForms();
                 hooks::Install(); //for maxsu poise compat
                 break;
