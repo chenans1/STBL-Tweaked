@@ -33,16 +33,17 @@ class hooks {
             
             SKSE::log::info("Installed processHit hook. ");
             
-            //anim speed hooks from simple timed block addons
-            // {
-            //     _originalUpdate = trampoline.write_call<5>(REL::RelocationID(40436, 41453).address() + REL::Relocate(0x74, 0x74), UpdateAnimation);
-            // }
-
+            // anim speed hooks from simple timed block addons
+            SKSE::log::info("Installing Attempting to install update hook...");
+            {
+                _originalUpdate = trampoline.write_call<5>(REL::RelocationID(40436, 41453).address() + REL::Relocate(0x74, 0x74), UpdateAnimation);
+            }
+            SKSE::log::info("Installing Attempting to installed update hook...");
             //
-            SKSE::log::info("Installing Attempting to install hkbClip->Update() hook...");
-            { REL::Relocation<std::uintptr_t> vtblhkbClipGenerator{RE::VTABLE_hkbClipGenerator[0]};
-            _originalUpdate = vtblhkbClipGenerator.write_vfunc(0x05, UpdateClip); }
-            SKSE::log::info("[hkbHook]: installed Update hook at slot 0x5");
+            // SKSE::log::info("Installing Attempting to install hkbClip->Update() hook...");
+            // { REL::Relocation<std::uintptr_t> vtblhkbClipGenerator{RE::VTABLE_hkbClipGenerator[0]};
+            // _originalUpdate = vtblhkbClipGenerator.write_vfunc(0x05, UpdateClip); }
+            // SKSE::log::info("[hkbHook]: installed Update hook at slot 0x5");
 
             SKSE::log::info("Finished Installing Hooks. ");
         }
@@ -82,13 +83,13 @@ class hooks {
         
         static bool PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName);
         static void processHit(RE::Actor* actor, RE::HitData& hitData);
-        // static void UpdateAnimation(RE::Actor* a_this, float a_deltaTime);
-        static void UpdateClip(RE::hkbClipGenerator* self, const RE::hkbContext& a_context, float a_timestep);
+        static void UpdateAnimation(RE::Actor* a_this, float a_deltaTime);
+        // static void UpdateClip(RE::hkbClipGenerator* self, const RE::hkbContext& a_context, float a_timestep);
 
         inline static REL::Relocation<decltype(PC_NotifyAnimationGraph)> _PC_NotifyAnimationGraph;
         inline static REL::Relocation<decltype(processHit)> _ProcessHit;
-        // inline static REL::Relocation<decltype(UpdateAnimation)> _originalUpdate;
+        inline static REL::Relocation<decltype(UpdateAnimation)> _originalUpdate;
 
-        static inline REL::Relocation<decltype(UpdateClip)> _originalUpdate;
+        // static inline REL::Relocation<decltype(UpdateClip)> _originalUpdate;
 
 };
