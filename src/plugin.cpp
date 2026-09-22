@@ -55,11 +55,15 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
                 settings::Load();
-                hooks::LoadForms();
-                hooks::Install(); //for maxsu poise compat
+                if (hooks::LoadForms()) {
+                    hooks::Install(); //for maxsu poise compat
+                    log::info("Simple timed block - tweaked has finished loading.");
+                } else {
+                    log::critical("Required forms could not be loaded; hooks will not be installed");
+                }
                 break;
             }
     });
-    log::info("{} has finished loading.", plugin->GetName());
+    // log::info("{} has finished loading.", plugin->GetName());
     return true;
 }

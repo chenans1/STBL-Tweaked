@@ -1,5 +1,7 @@
 #pragma once
 
+#include "form_config.h"
+
 class hooks {
     public:
         static inline RE::SpellItem* timedBlockWindowSpell = nullptr;
@@ -39,24 +41,24 @@ class hooks {
                 _originalUpdate = trampoline.write_call<5>(REL::RelocationID(40436, 41453).address() + REL::Relocate(0x74, 0x74), UpdateAnimation);
             }
             SKSE::log::info("Installed animation update hooks.");
-            //
-            // SKSE::log::info("Installing Attempting to install hkbClip->Update() hook...");
-            // { REL::Relocation<std::uintptr_t> vtblhkbClipGenerator{RE::VTABLE_hkbClipGenerator[0]};
-            // _originalUpdate = vtblhkbClipGenerator.write_vfunc(0x05, UpdateClip); }
-            // SKSE::log::info("[hkbHook]: installed Update hook at slot 0x5");
 
             SKSE::log::info("Finished Installing Hooks. ");
         }
 
         static bool LoadForms() {
+            if (!form_config::Load()) {
+                return false;
+            }
+
             auto* dataHandler = RE::TESDataHandler::GetSingleton();
-            timedBlockWindowSpell = dataHandler->LookupForm<RE::SpellItem>(0x802, "SimpleTimedBlock.esp");
-            timedBlockWindowMGEF = dataHandler->LookupForm<RE::EffectSetting>(0x801, "SimpleTimedBlock.esp");
-            timedBlockStaggerSpell = dataHandler->LookupForm<RE::SpellItem>(0x803, "SimpleTimedBlock.esp");
+            const auto& configured = form_config::Get().core;
+            timedBlockWindowSpell = configured.parrySpell;
+            timedBlockWindowMGEF = configured.parryWindow;
+            timedBlockStaggerSpell = configured.staggerSpell;
             timeBlockBuffSpell = dataHandler->LookupForm<RE::SpellItem>(0x80B, "SimpleTimedBlock.esp");
-            timed_block_explosion = dataHandler->LookupForm<RE::BGSExplosion>(0x805, "SimpleTimedBlock.esp");
+            timed_block_explosion = configured.timedBlockExplosion;
             timed_block_counter_glob = dataHandler->LookupForm<RE::TESGlobal>(0x80E, "SimpleTimedBlock.esp");
-            timedBlockSFX = dataHandler->LookupForm<RE::BGSSoundDescriptorForm>(0x807, "SimpleTimedBlock.esp");
+            timedBlockSFX = configured.timedBlockSound;
 
             attackerHitstopSpell = dataHandler->LookupForm<RE::SpellItem>(0x801, "SimpleTimedBlockTweaked.esp");
             attackerHitStopMGEF = dataHandler->LookupForm<RE::EffectSetting>(0x800, "SimpleTimedBlockTweaked.esp");
@@ -80,16 +82,13 @@ class hooks {
         }
 
     private:
-        
+
         static bool PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName);
         static void processHit(RE::Actor* actor, RE::HitData& hitData);
         static void UpdateAnimation(RE::Actor* a_this, float a_deltaTime);
-        // static void UpdateClip(RE::hkbClipGenerator* self, const RE::hkbContext& a_context, float a_timestep);
 
         inline static REL::Relocation<decltype(PC_NotifyAnimationGraph)> _PC_NotifyAnimationGraph;
         inline static REL::Relocation<decltype(processHit)> _ProcessHit;
         inline static REL::Relocation<decltype(UpdateAnimation)> _originalUpdate;
-
-        // static inline REL::Relocation<decltype(UpdateClip)> _originalUpdate;
 
 };

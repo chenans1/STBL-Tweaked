@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 namespace settings {
     struct config {
         bool log = true;
@@ -10,6 +8,7 @@ namespace settings {
         bool applyTimedBlockSFX = true;
         
         bool preventAllDamage = true;
+        //bypasses the blockcap limit intentionally
         float additionalDamageReduction = 0.5;
         
         float timedBlockWindow = 0.33f;
@@ -20,6 +19,7 @@ namespace settings {
         bool attackerHistopEnabled = true;
         float attackerSlowDownMult = 0.05f;
         float attackerSlowdownDuration = 0.5f;
+
     };
     
     template <class T>

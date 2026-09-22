@@ -14,7 +14,7 @@ void applyHitstopSpell(RE::Actor* attacker, float duration) {
     if (!attacker) {
         return;
     }
-    SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
+    // SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
     if (hooks::attackerHitStopMGEF) {
         hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
     }
@@ -49,8 +49,9 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         if (auto* magicTarget = player->GetMagicTarget()) {
             if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
                 const auto cfg = settings::Get();
+                const bool hasRequiredPerk = form_config::Get().perks.melee.IsMetBy(player);
                 utils::incrementGlobalTBCounter();
-                if (cfg.preventAllDamage) {
+                if (cfg.preventAllDamage && hasRequiredPerk) {
                     hitData.totalDamage = 0.0f;
                     hitData.criticalDamageMult = 0.0f;
                     hitData.physicalDamage = 0.0f;
@@ -62,8 +63,10 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
                 }
                 
                 hitData.percentBlocked = 1.0f;
-                hitData.stagger = 0.0f;
-                if (cfg.AOEStaggerEnabled) {
+                if (hasRequiredPerk) {
+                    hitData.stagger = 0.0f;
+                }
+                if (cfg.AOEStaggerEnabled && hasRequiredPerk) {
                     utils::StaggerNearby(actor, cfg.AOEStaggerRadius);
                 }
 
