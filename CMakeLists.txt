@@ -22,6 +22,8 @@ set(SOURCES
     src/plugin.cpp
     src/hooks.h
     src/hooks.cpp
+    src/form_config.h
+    src/form_config.cpp
     src/utils.h
     src/settings.h
     src/settings.cpp
