@@ -12,6 +12,8 @@ namespace settings {
         bool preventAllDamage = true;
         float additionalDamageReduction = 0.5;
         
+        float timedBlockWindow = 0.33f;
+
         bool AOEStaggerEnabled = true;
         float AOEStaggerRadius = 256.0f;
         
@@ -33,6 +35,8 @@ namespace settings {
         setting_definition<bool>{ "preventAllDamage", &settings::config::preventAllDamage },
         setting_definition<float>{ "additionalDamageReduction", &settings::config::additionalDamageReduction },
         
+        setting_definition<float>{ "timedBlockWindow", &settings::config::timedBlockWindow },
+
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
         setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
         

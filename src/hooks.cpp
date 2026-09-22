@@ -3,6 +3,13 @@
 #include "utils.h"
 #include "settings.h"
 
+void applyWindowDuration() {
+    if (hooks::timedBlockWindowMGEF) {
+        const auto config = settings::Get();
+        hooks::timedBlockWindowMGEF->data.taperDuration = std::clamp(config.timedBlockWindow, 0.0f, 1.0f);
+    }
+}
+
 //doing this allows for native dual wield block key compat. 
 bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName) {
     const bool result = _PC_NotifyAnimationGraph(a_this, a_eventName);
@@ -12,6 +19,7 @@ bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, co
         // SKSE::log::info("APPLYING TIMED BLOCK MGEF!");
         if (auto* player = RE::PlayerCharacter::GetSingleton()) {
             if (auto* caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)) {
+                applyWindowDuration();
                 caster->CastSpellImmediate(hooks::timedBlockWindowSpell, true, player, 1.0f, false, 0.0f, player);
                 return result;
             }
@@ -30,6 +38,7 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         if (auto* magicTarget = player->GetMagicTarget()) {
             if (magicTarget->HasMagicEffect(hooks::timedBlockWindowMGEF)) {
                 const auto cfg = settings::Get();
+                // utils::SendTBModEvent()
                 if (cfg.preventAllDamage) {
                     hitData.totalDamage = 0.0f;
                     hitData.criticalDamageMult = 0.0f;

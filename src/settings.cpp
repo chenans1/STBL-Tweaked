@@ -140,6 +140,8 @@ namespace settings {
     void __stdcall RenderMenuPage() {
         config current = Get();
         bool changed = false;
+        changed |= ImGuiMCP::SliderFloat("Timed Block Window", &current.timedBlockWindow, 0.0f, 1.0f, "%.1f");
+
         changed |= ImGuiMCP::Checkbox("Enable Sound Effects", &current.applyTimedBlockSFX);
         changed |= ImGuiMCP::Checkbox("Enable Visual Effects", &current.applyTimedBlockVFX);
         changed |= ImGuiMCP::Checkbox("Prevent All Damage", &current.preventAllDamage);
@@ -147,7 +149,7 @@ namespace settings {
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
-        
+
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.1f");
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.1f");
         ImGuiMCP::Separator();

@@ -66,4 +66,21 @@ namespace utils {
             return RE::BSContainer::ForEachResult::kContinue;
         });
     }   
+
+    // inline static bool ApplyWithDurationOverride(float duration, RE::SpellItem* a_spell, RE::EffectSetting* a_effect) {
+    //     if (!a_spell || !a_effect) {
+    //         return false;
+    //     }
+    //     const auto duration = static_cast<std::int32_t>(std::clamp(duration, 0.0f, 5.0f));
+
+    //     for (auto* effect : a_spell->effects) {
+    //         if (effect && effect->baseEffect == a_effect) {
+    //             effect->SetDuration(duration);
+    //             return true;
+    //         }
+    //     }
+
+    //     SKSE::log::error("ApplyWithDurationOverride failed");
+    //     return false;
+    // }
 }
