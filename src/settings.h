@@ -40,6 +40,8 @@ namespace settings {
 
         setting_definition<bool>{ "preventAllDamage", &settings::config::preventAllDamage },
         setting_definition<float>{ "additionalDamageReduction", &settings::config::additionalDamageReduction },
+        setting_definition<float>{ "additionalDamageReductionArrow", &settings::config::additionalDamageReductionArrow },
+        setting_definition<float>{ "additionalDamageReductionSpell", &settings::config::additionalDamageReductionSpell },
         
         setting_definition<float>{ "timedBlockWindow", &settings::config::timedBlockWindow },
 

@@ -47,6 +47,24 @@ namespace {
         }
     }
 
+    struct DamageSettings {
+        bool preventAllDamage = false;
+        float additionalDamageMultiplier = 1.0f;
+    };
+
+    [[nodiscard]] DamageSettings getDamageSettings(AttackType attackType, const settings::config& config) {
+        switch (attackType) {
+            case AttackType::Melee:
+                return { config.preventAllDamage, config.additionalDamageReduction };
+            case AttackType::Spell:
+                return { config.preventAllDamageSpells, config.additionalDamageReductionSpell };
+            case AttackType::Arrow:
+                return { config.preventAllDamageArrows, config.additionalDamageReductionArrow };
+            default:
+                return {};
+        }
+    }
+
     [[nodiscard]] RE::SpellItem* getAttackerSpell(AttackType attackType) {
         switch (attackType) {
             case AttackType::Melee:
@@ -104,15 +122,16 @@ namespace {
             return result;
         }
 
-        const auto hasRequiredPerk = checkFullyBlockedRequirement(request.attackType, request.defender);
-
         const auto config = settings::Get();
-        if (config.preventAllDamage && hasRequiredPerk) {
+        const auto damageSettings = getDamageSettings(request.attackType, config);
+        const bool hasRequiredPerk = checkFullyBlockedRequirement(request.attackType, request.defender);
+
+        if (damageSettings.preventAllDamage && hasRequiredPerk) {
             result.outcome = TimedBlockOutcome::FullyBlocked;
             result.damageMultiplier = 0.0F;
         } else {
             result.outcome = TimedBlockOutcome::Reduced;
-            result.damageMultiplier = std::clamp(config.additionalDamageReduction, 0.0f, 1.0f);
+            result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
         }
         return result;
     }
