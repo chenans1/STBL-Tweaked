@@ -81,7 +81,7 @@ namespace utils {
         }
         return false;
     }   
-    
+
     inline static float safelyAddWithCap(const float value, const float increment, const float cap) {
         return std::min(value + increment, cap);
     }
@@ -92,41 +92,14 @@ namespace utils {
         }
     }
 
-    // inline bool ieq(char a, char b) noexcept {
-    //     return std::tolower((unsigned char)a) == std::tolower((unsigned char)b);
-    // }
-
-    // inline static bool istarts_with(std::string_view s, std::string_view prefix) noexcept {
-    //     if (s.size() < prefix.size()) return false;
-
-    //     for (size_t i = 0; i < prefix.size(); ++i) {
-    //         if (!ieq(s[i], prefix[i])) return false;
-    //     }
-    //     return true;
-    // }
-
-    
-    // inline static std::string_view basename_view(std::string_view path) noexcept {
-    //     const auto p1 = path.find_last_of('\\');
-    //     const auto p2 = path.find_last_of('/');
-    //     const auto pos = (p1 == std::string_view::npos) ? p2 : (p2 == std::string_view::npos) ? p1 : (std::max)(p1, p2);
-    //     return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
-    // }
-
-    // inline static bool ApplyWithDurationOverride(float duration, RE::SpellItem* a_spell, RE::EffectSetting* a_effect) {
-    //     if (!a_spell || !a_effect) {
-    //         return false;
-    //     }
-    //     const auto duration = static_cast<std::int32_t>(std::clamp(duration, 0.0f, 5.0f));
-
-    //     for (auto* effect : a_spell->effects) {
-    //         if (effect && effect->baseEffect == a_effect) {
-    //             effect->SetDuration(duration);
-    //             return true;
-    //         }
-    //     }
-
-    //     SKSE::log::error("ApplyWithDurationOverride failed");
-    //     return false;
-    // }
+    inline void applyHitstopSpell(RE::Actor* attacker, RE::Actor* blocker, float duration) {
+        if (!attacker) {
+            return;
+        }
+        // SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
+        if (hooks::attackerHitStopMGEF) {
+            hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
+        }
+        utils::ApplySpell(blocker, attacker, hooks::attackerHitstopSpell);
+    }
 }

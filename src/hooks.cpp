@@ -63,17 +63,15 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
                 }
                 
                 hitData.percentBlocked = 1.0f;
-                if (hasRequiredPerk) {
-                    hitData.stagger = 0.0f;
-                }
-
+                hitData.stagger = 0.0f;
+                
                 if (cfg.AOEStaggerEnabled && hasRequiredPerk) {
                     utils::StaggerNearby(actor, cfg.AOEStaggerRadius);
                 }
-
+                
                 //apply stbl's self-buff spell
                 utils::ApplySpell(actor, actor, hooks::timeBlockBuffSpell);
-                
+
                 //apply sfx/vfx
                 if (cfg.applyTimedBlockVFX) {
                     player->PlaceObjectAtMe(hooks::timed_block_explosion, false);

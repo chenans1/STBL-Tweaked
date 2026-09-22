@@ -27,6 +27,8 @@ set(SOURCES
     src/utils.h
     src/settings.h
     src/settings.cpp
+    src/STBL_API.h
+    src/STBL_API.cpp
 )
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${SOURCES}) # <--- specifies plugin.cpp
