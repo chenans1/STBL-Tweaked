@@ -10,10 +10,10 @@ namespace utils {
 
         if (auto* caster = a_caster->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)) {
             caster->CastSpellImmediate(a_spell, false, a_target, 1.0f, false, 0.0f, a_caster);
-            if (const auto cfg = settings::Get().log) { 
-                SKSE::log::info("[ApplySpell]: Cast spell={:08X} on target={:08X} caster={:08X}",  
-                    a_spell->GetFormID(), a_target ? a_target->GetFormID() : 0, a_caster ? a_caster->GetFormID() : 0);
-            }
+            // if (const auto cfg = settings::Get().log) { 
+            //     SKSE::log::info("[ApplySpell]: Cast spell={:08X} on target={:08X} caster={:08X}",  
+            //         a_spell->GetFormID(), a_target ? a_target->GetFormID() : 0, a_caster ? a_caster->GetFormID() : 0);
+            // }
             return true;
         }
         return false;
@@ -101,5 +101,40 @@ namespace utils {
             hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
         }
         utils::ApplySpell(blocker, attacker, hooks::attackerHitstopSpell);
+    }
+
+    inline static RE::Effect* FindEffect(RE::SpellItem* a_spell, RE::EffectSetting* a_mgef) {
+        if (!a_spell || !a_mgef) {
+            return nullptr;
+        }
+        for (auto* effect : a_spell->effects) {
+            if (effect && effect->baseEffect == a_mgef) {
+                return effect;
+            }
+        }
+        return nullptr;
+    }
+
+    //overrides the magnitude of SimpleTimedBlockTweaked.esp~0x809's 0x808 MGEF (first instance). 0.0f means disabled.
+    inline static void overrideSTBLStagger(float overrideMag) {
+        if (overrideMag <= 0.0f) {
+            return;
+        }
+        auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
+        effect->SetMagnitude(overrideMag);
+    }
+
+    inline static bool passesInterruptConditions(RE::Actor* a_blocker, RE::Actor* a_attacker) {
+        auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
+        if (!effect || !a_blocker || !a_attacker) {
+            return false;
+        }
+
+        // Conditions placed on the 0x808 effect entry inside spell 0x809.
+        if (effect->conditions && !effect->conditions.IsTrue(a_attacker, a_blocker)) {
+            return false;
+        }
+
+        return true;
     }
 }

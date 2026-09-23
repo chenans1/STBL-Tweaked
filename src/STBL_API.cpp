@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "hooks.h"
+#include <random>
 
 namespace {
     using namespace STBL_API;
@@ -27,6 +28,53 @@ namespace {
         const auto* armor = leftHand ? leftHand->As<RE::TESObjectARMO>() : nullptr;
         return armor && armor->IsShield();
     }
+
+    static bool evalutateInterruption(RE::Actor* blocker, RE::Actor* attacker, AttackType attackType, const settings::config& cfg) {
+        if (!attacker || !blocker) return false;
+        if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
+        if (attackType!=AttackType::Melee && !cfg.rangedInterruptEnabled) return false;
+        if (!utils::passesInterruptConditions(blocker, attacker)) {
+            if (cfg.log) {SKSE::log::info("[evalutateInterruption] blocker={:08X} attacker={:08X} does not pass conditions", 
+                    blocker ? blocker->GetFormID() : 0, attacker ? attacker->GetFormID() : 0);}
+            return false;
+        }
+        const float blockSkill = (std::max)(0.0f, blocker->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
+        float chance = cfg.baseInterruptChance * (1.0f + blockSkill * cfg.blockSkillFactor/100.0f);
+        if (isUsingShield(blocker)) chance *= cfg.shieldInterruptMult;
+        if (attackType != AttackType::Melee) chance *= cfg.rangedInterruptMult;
+        chance = std::clamp(chance, 0.0f, std::clamp(cfg.maxInterruptChance, 0.0f, 1.0f));
+        thread_local std::mt19937 generator{ std::random_device{}() };
+        std::uniform_real_distribution<float> distribution{ 0.0f, 1.0f };
+        const float dist = distribution(generator);
+        if (dist >= chance){ 
+            if (cfg.log) {SKSE::log::info("[evalutateInterruption] blocker={:08X} chance failed dist={} chance={}", 
+                    blocker ? blocker->GetFormID() : 0, dist, chance);}
+            return false;}
+        
+        if (cfg.interruptStagger) {
+            utils::overrideSTBLStagger(cfg.staggerMagnitudeOverride);
+            utils::ApplySpell(blocker, attacker, hooks::STBLTweakedStaggerSpell);
+            return true;
+        } else {
+            //technically not needed for the spells, the conditions will apply.
+            // if (!utils::passesInterruptConditions(blocker, attacker)) {
+            //     return false;
+            // }
+            switch (attackType) {
+                case STBL_API::AttackType::Melee:
+                    attacker->NotifyAnimationGraph("recoilLargeStart");
+                    return true;
+                case STBL_API::AttackType::Spell:
+                    attacker->NotifyAnimationGraph("InterruptCast");
+                    return true;
+                case STBL_API::AttackType::Arrow:
+                    attacker->NotifyAnimationGraph("recoilLargeStart");
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }   
 
     [[nodiscard]] bool checkFullyBlockedRequirement(AttackType attackType, const RE::Actor* actor) {
         const auto& perks = form_config::Get().perks;
@@ -102,6 +150,10 @@ namespace {
 
         if (!attacker) {
             return;
+        }
+
+        if (cfg.enableInterrupt) {
+            evalutateInterruption(defender, attacker, attackType, cfg);
         }
 
         utils::ApplySpell(defender, attacker, getAttackerSpell(attackType));

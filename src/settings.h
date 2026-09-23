@@ -19,6 +19,19 @@ namespace settings {
         bool AOEStaggerEnabled = true;
         float AOEStaggerRadius = 256.0f;
         
+        //interrupt -> recoil, spellcaster-> interrupt, arrow = recoil (with behavior patch)
+        //alternatively: just uses the stagger spell
+        bool enableInterrupt = true;
+        bool interruptStagger = true; //off = recoil, on = stagger
+        bool meleeInterruptEnabled = true;
+        bool rangedInterruptEnabled = true;
+        float baseInterruptChance = 0.2f; //interrupt chance = base * blockskill*blockSkillFactor * (shieldInterruptMult * rangedInterruptMult)
+        float maxInterruptChance = 1.0f;
+        float blockSkillFactor = 0.5f; //additional chance per block skill factor
+        float shieldInterruptMult = 1.5f;
+        float rangedInterruptMult = 0.5f;
+        float staggerMagnitudeOverride = 1.0f; //overrides the magnitude of SimpleTimedBlockTweaked.esp~0x809's 0x808 MGEF
+
         bool attackerHistopEnabled = true;
         float attackerSlowDownMult = 0.05f;
         float attackerSlowdownDuration = 0.5f;
@@ -47,6 +60,17 @@ namespace settings {
 
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
         setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
+
+        setting_definition<bool>{ "enableInterrupt", &settings::config::enableInterrupt },
+        setting_definition<bool>{ "interruptStagger", &settings::config::interruptStagger },
+        setting_definition<bool>{ "meleeInterruptEnabled", &settings::config::meleeInterruptEnabled },
+        setting_definition<bool>{ "rangedInterruptEnabled", &settings::config::rangedInterruptEnabled },
+        setting_definition<float>{ "baseInterruptChance", &settings::config::baseInterruptChance },
+        setting_definition<float>{ "maxInterruptChance", &settings::config::maxInterruptChance },
+        setting_definition<float>{ "blockSkillFactor", &settings::config::blockSkillFactor },
+        setting_definition<float>{ "shieldInterruptMult", &settings::config::shieldInterruptMult },
+        setting_definition<float>{ "rangedInterruptMult", &settings::config::rangedInterruptMult },
+        setting_definition<float>{ "staggerMagnitudeOverride", &settings::config::staggerMagnitudeOverride },
 
         setting_definition<bool>{ "attackerHistopEnabled", &settings::config::attackerHistopEnabled },
         setting_definition<float>{ "attackerSlowDownMult", &settings::config::attackerSlowDownMult },

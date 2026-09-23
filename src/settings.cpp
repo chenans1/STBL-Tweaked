@@ -138,6 +138,19 @@ namespace settings {
         }
     }
 
+    static float calculateDisplayedInterruptChance(const config& current, float blockSkill, bool assumeShield, bool isRanged) {
+        float chance = current.baseInterruptChance * (1.0f + blockSkill * current.blockSkillFactor / 100.0f);
+
+        if (assumeShield) {
+            chance *= current.shieldInterruptMult;
+        }
+        if (isRanged) {
+            chance *= current.rangedInterruptMult;
+        }
+        
+        return std::clamp(chance, 0.0f, std::clamp(current.maxInterruptChance, 0.0f, 1.0f));
+    }
+
     void __stdcall RenderMenuPage() {
         config current = Get();
         bool changed = false;
@@ -154,6 +167,30 @@ namespace settings {
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
+        
+        ImGuiMCP::TextUnformatted("Single target stagger, chance roll. Recoiling ranged targets requires behavior patch.");
+        ImGuiMCP::TextUnformatted("interrupt chance = base * (1 + block skill * factor / 100) * applicable multipliers");
+        changed |= ImGuiMCP::Checkbox("Attacker Interruption", &current.enableInterrupt);
+        changed |= ImGuiMCP::Checkbox("Interruption is stagger instead of recoil/interruptCast", &current.interruptStagger);
+        changed |= ImGuiMCP::Checkbox("Melee Interruption Enabled", &current.meleeInterruptEnabled);
+        changed |= ImGuiMCP::Checkbox("Ranged Interruption Enabled", &current.rangedInterruptEnabled);
+        changed |= ImGuiMCP::SliderFloat("base Interrupt Chance", &current.baseInterruptChance, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("block Skill Factor", &current.blockSkillFactor, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Shield Interruption multiplier", &current.shieldInterruptMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Ranged Interurption Multiplier", &current.rangedInterruptMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Max Interrupt Chance", &current.maxInterruptChance, 0.0f, 1.0f, "%.2f");
+
+        float playerBlockSkill = 0.0f;
+        if (const auto* player = RE::PlayerCharacter::GetSingleton()) {
+            playerBlockSkill = (std::max)(0.0f, player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
+        }
+
+        ImGuiMCP::Text("Melee interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, false) * 100.0f);
+        ImGuiMCP::Text("Melee interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, false) * 100.0f);
+        ImGuiMCP::Text("Ranged interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, true) * 100.0f);
+        ImGuiMCP::Text("Ranged interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, true) * 100.0f);
+
+        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
