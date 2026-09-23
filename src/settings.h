@@ -25,11 +25,11 @@ namespace settings {
         bool interruptStagger = true; //off = recoil, on = stagger
         bool meleeInterruptEnabled = true;
         bool rangedInterruptEnabled = true;
-        float baseInterruptChance = 0.2f; //interrupt chance = base * blockskill*blockSkillFactor * (shieldInterruptMult * rangedInterruptMult)
-        float maxInterruptChance = 1.0f;
-        float blockSkillFactor = 0.5f; //additional chance per block skill factor
-        float shieldInterruptMult = 1.5f;
-        float rangedInterruptMult = 0.5f;
+        float baseInterruptChance = 0.33f; //interrupt chance = base * blockskill*blockSkillFactor * (shieldInterruptMult * rangedInterruptMult)
+        float maxInterruptChance = 0.80f;
+        float blockSkillFactor = 0.50f; //additional chance per block skill factor
+        float shieldInterruptMult = 1.33f;
+        float rangedInterruptMult = 0.66f;
         float staggerMagnitudeOverride = 1.0f; //overrides the magnitude of SimpleTimedBlockTweaked.esp~0x809's 0x808 MGEF
 
         bool attackerHistopEnabled = true;
@@ -38,6 +38,9 @@ namespace settings {
 
         bool preventAllDamageArrows = true;
         bool preventAllDamageSpells = true;
+
+        bool reflectArrows = true;
+        bool reflectSpells = true;
     };
     
     template <class T>
@@ -78,6 +81,9 @@ namespace settings {
 
         setting_definition<bool>{ "preventAllDamageArrows", &settings::config::preventAllDamageArrows },
         setting_definition<bool>{ "preventAllDamageSpells", &settings::config::preventAllDamageSpells },
+
+        setting_definition<bool>{ "reflectArrows", &settings::config::reflectArrows },
+        setting_definition<bool>{ "reflectSpells", &settings::config::reflectSpells },
     };
 
     config Get();

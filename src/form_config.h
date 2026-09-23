@@ -34,9 +34,20 @@ namespace form_config {
         PerkRequirement stagger;
     };
 
+    struct RangedPerkRequirements {
+        PerkRequirement spell;
+        PerkRequirement arrow;
+    };
+
+    struct ReflectionPerkRequirements {
+        RangedPerkRequirements shield;
+        RangedPerkRequirements nonShield;
+    };
+
     struct Config {
         CoreForms core;
         PerkRequirements perks;
+        ReflectionPerkRequirements reflectionPerks;
     };
 
     // Loads and resolves every configured form. Missing files are created with
