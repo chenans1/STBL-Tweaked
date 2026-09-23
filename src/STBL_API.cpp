@@ -95,7 +95,7 @@ namespace {
         }
     }
 
-    [[nodiscard]] bool checkReflectionRequirement(AttackType attackType, const RE::Actor* defender, const settings::config& config) {
+    [[nodiscard]] bool checkReflectionRequirement(AttackType attackType, RE::Actor* defender, const settings::config& config) {
         if (!defender) return false;
         const auto& requirements = form_config::Get().reflectionPerks;
         const auto& equippedRequirements = isUsingShield(defender) ? requirements.shield : requirements.nonShield;
@@ -108,6 +108,58 @@ namespace {
 
             default:
                 return false;
+        }
+    }
+
+    // Rolls reflection after the setting and equipment-specific perk gate pass.
+    [[nodiscard]] bool handleReflection(AttackType attackType, RE::Actor* defender, const settings::config& config) {
+        if (!checkReflectionRequirement(attackType, defender, config)) {
+            return false;
+        }
+
+        const float blockSkill = (std::max)(0.0f, defender->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
+        float chance = config.baseReflectionChance * (1.0f + blockSkill * config.reflectionSkillFactor/100.0f);
+        switch (attackType) {
+            case AttackType::Spell:
+                chance *= config.spellReflectionMult;
+                chance *= utils::handlePEPE(defender, "STBLReflectionChanceSpell");
+                break;
+            case AttackType::Arrow:
+                chance *= config.arrowReflectionMult;
+                chance *= utils::handlePEPE(defender, "STBLReflectionChanceArrow");
+                break;
+            default:
+                return false;
+        }
+
+        chance = std::clamp(chance, 0.0f, 1.0f);
+        thread_local std::mt19937 generator{ std::random_device{}() };
+        std::uniform_real_distribution<float> distribution{ 0.0f, 1.0f };
+        const float dist = distribution(generator);
+        const bool succeeded = dist < chance;
+        if (config.log) {
+            SKSE::log::info("[handleReflection] blocker={:08X} succeeded={} roll={} chance={}",
+                defender->GetFormID(), succeeded, dist, chance);
+        }
+        return succeeded;
+    }
+
+    // Returns only the extra reflection portion. The consumer remains
+    // responsible for adding this to its normal block resource cost.
+    [[nodiscard]] float getReflectionCostMultiplier(AttackType attackType, RE::Actor* defender, const settings::config& config) {
+        if (!defender) {
+            return 0.0f;
+        }
+
+        switch (attackType) {
+            case AttackType::Spell:
+                return (std::max)(0.0f, config.spellCostReflectionMult) *
+                       utils::handlePEPE(defender, "STBLReflectionCostSpell");
+            case AttackType::Arrow:
+                return (std::max)(0.0f, config.arrowReflectionCostMult) *
+                       utils::handlePEPE(defender, "STBLReflectionCostArrow");
+            default:
+                return 0.0f;
         }
     }
 
@@ -202,7 +254,10 @@ namespace {
             result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
         }
 
-        result.reflectProjectile = checkReflectionRequirement(request.attackType, request.defender, config);
+        result.reflectProjectile = handleReflection(request.attackType, request.defender, config);
+        if (result.reflectProjectile) {
+            result.reflectionCostMultiplier = getReflectionCostMultiplier(request.attackType, request.defender, config);
+        }
         return result;
     }
 

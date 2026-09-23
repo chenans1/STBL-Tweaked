@@ -42,13 +42,15 @@ namespace settings {
         bool reflectArrows = true;
         bool reflectSpells = true;
 
-        //multipliers of the costs in animated projectile blocking
-        float baseReflectionChance = 0.25;
+        //arrow reflection gameplay stuff:
+        float baseReflectionChance = 0.25f;
         float reflectionSkillFactor = 0.5f;
         float arrowReflectionMult = 1.0f;
         float spellReflectionMult = 0.8f;
-        float arrowReflectionCostMult = 2.0f;
-        float spellCostReflectionMult =  2.5f; 
+        // These are additional costs: 1.0 means 2.0x total cost,
+        // but the entry point for reflection only affects the reflect and not base block cost.
+        float arrowReflectionCostMult = 1.0f;
+        float spellCostReflectionMult = 1.5f;
     };
     
     template <class T>

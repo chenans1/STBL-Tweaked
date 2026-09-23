@@ -1,6 +1,7 @@
 #pragma once
 #include "hooks.h"
-
+#include "settings.h"
+#include "extern/PerkEntryPointExtenderAPI.h"
 
 namespace utils {
     inline static bool ApplySpell(RE::Actor* a_caster, RE::Actor* a_target, RE::SpellItem* a_spell) {
@@ -136,5 +137,19 @@ namespace utils {
         }
 
         return true;
+    }
+
+    // Handles Perk Entry Point Extender.
+    // GROUP__STBLReflectionChanceArrow
+    // GROUP__STBLReflectionChanceSpell
+    // GROUP__STBLReflectionCostArrow
+    // GROUP__STBLReflectionCostSpell
+    inline static float handlePEPE(RE::Actor* actor, std::string_view category) {
+        float multiplier = 1.0f;
+        const auto result = RE::HandleEntryPoint(RE::PerkEntryPoint::kModTelekinesisDistance, actor, multiplier, category);
+        if (settings::Get().log) {
+            SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
+        }
+        return (std::max)(0.0f, multiplier);
     }
 }
