@@ -124,21 +124,7 @@ namespace utils {
         auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
         effect->SetMagnitude(overrideMag);
     }
-
-    inline static bool passesInterruptConditions(RE::Actor* a_blocker, RE::Actor* a_attacker) {
-        auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
-        if (!effect || !a_blocker || !a_attacker) {
-            return false;
-        }
-
-        // Conditions placed on the 0x808 effect entry inside spell 0x809.
-        if (effect->conditions && !effect->conditions.IsTrue(a_attacker, a_blocker)) {
-            return false;
-        }
-
-        return true;
-    }
-
+    
     // Handles Perk Entry Point Extender.
     // GROUP__STBLReflectionChanceArrow
     // GROUP__STBLReflectionChanceSpell
@@ -147,9 +133,9 @@ namespace utils {
     inline static float handlePEPE(RE::Actor* actor, std::string_view category) {
         float multiplier = 1.0f;
         const auto result = RE::HandleEntryPoint(RE::PerkEntryPoint::kModTelekinesisDistance, actor, multiplier, category);
-        if (settings::Get().log) {
-            SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
-        }
+        // if (settings::Get().log) {
+        //     SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
+        // }
         return (std::max)(0.0f, multiplier);
     }
 }

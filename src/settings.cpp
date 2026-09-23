@@ -181,10 +181,9 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
         
-        ImGuiMCP::TextUnformatted("Single target stagger, chance roll. Recoiling ranged targets requires behavior patch.");
-        ImGuiMCP::TextUnformatted("interrupt chance = base * (1 + block skill * factor / 100) * applicable multipliers");
+        ImGuiMCP::TextUnformatted("Single target stagger, chance roll");
+        ImGuiMCP::TextUnformatted("Interruption chance = base * (1 + block skill * factor / 100) * applicable multipliers");
         changed |= ImGuiMCP::Checkbox("Attacker Interruption", &current.enableInterrupt);
-        changed |= ImGuiMCP::Checkbox("Interruption is stagger instead of recoil/interruptCast", &current.interruptStagger);
         changed |= ImGuiMCP::Checkbox("Melee Interruption Enabled", &current.meleeInterruptEnabled);
         changed |= ImGuiMCP::Checkbox("Ranged Interruption Enabled", &current.rangedInterruptEnabled);
         changed |= ImGuiMCP::SliderFloat("base Interrupt Chance", &current.baseInterruptChance, 0.0f, 1.0f, "%.2f");

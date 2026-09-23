@@ -33,11 +33,6 @@ namespace {
         if (!attacker || !blocker) return false;
         if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
         if (attackType!=AttackType::Melee && !cfg.rangedInterruptEnabled) return false;
-        if (!utils::passesInterruptConditions(blocker, attacker)) {
-            if (cfg.log) {SKSE::log::info("[evalutateInterruption] blocker={:08X} attacker={:08X} does not pass conditions", 
-                    blocker ? blocker->GetFormID() : 0, attacker ? attacker->GetFormID() : 0);}
-            return false;
-        }
         const float blockSkill = (std::max)(0.0f, blocker->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
         float chance = cfg.baseInterruptChance * (1.0f + blockSkill * cfg.blockSkillFactor/100.0f);
         if (isUsingShield(blocker)) chance *= cfg.shieldInterruptMult;
@@ -51,29 +46,11 @@ namespace {
                     blocker ? blocker->GetFormID() : 0, dist, chance);}
             return false;}
         
-        if (cfg.interruptStagger) {
-            utils::overrideSTBLStagger(cfg.staggerMagnitudeOverride);
-            utils::ApplySpell(blocker, attacker, hooks::STBLTweakedStaggerSpell);
-            return true;
-        } else {
-            //technically not needed for the spells, the conditions will apply.
-            // if (!utils::passesInterruptConditions(blocker, attacker)) {
-            //     return false;
-            // }
-            switch (attackType) {
-                case STBL_API::AttackType::Melee:
-                    attacker->NotifyAnimationGraph("recoilLargeStart");
-                    return true;
-                case STBL_API::AttackType::Spell:
-                    attacker->NotifyAnimationGraph("InterruptCast");
-                    return true;
-                case STBL_API::AttackType::Arrow:
-                    attacker->NotifyAnimationGraph("recoilLargeStart");
-                    return true;
-                default:
-                    return false;
-            }
-        }
+        
+        utils::overrideSTBLStagger(cfg.staggerMagnitudeOverride);
+        utils::ApplySpell(blocker, attacker, hooks::STBLTweakedStaggerSpell);
+        return true;
+        
     }   
 
     [[nodiscard]] bool checkFullyBlockedRequirement(AttackType attackType, const RE::Actor* actor) {

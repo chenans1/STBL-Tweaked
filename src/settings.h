@@ -19,10 +19,8 @@ namespace settings {
         bool AOEStaggerEnabled = true;
         float AOEStaggerRadius = 256.0f;
         
-        //interrupt -> recoil, spellcaster-> interrupt, arrow = recoil (with behavior patch)
-        //alternatively: just uses the stagger spell
+        //Single target stagger spell with chance
         bool enableInterrupt = true;
-        bool interruptStagger = true; //off = recoil, on = stagger
         bool meleeInterruptEnabled = true;
         bool rangedInterruptEnabled = true;
         float baseInterruptChance = 0.33f; //interrupt chance = base * blockskill*blockSkillFactor * (shieldInterruptMult * rangedInterruptMult)
@@ -39,8 +37,8 @@ namespace settings {
         bool preventAllDamageArrows = true;
         bool preventAllDamageSpells = true;
 
-        bool reflectArrows = true;
-        bool reflectSpells = true;
+        bool reflectArrows = false;
+        bool reflectSpells = false;
 
         //arrow reflection gameplay stuff:
         float baseReflectionChance = 0.25f;
@@ -75,7 +73,6 @@ namespace settings {
         setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
 
         setting_definition<bool>{ "enableInterrupt", &settings::config::enableInterrupt },
-        setting_definition<bool>{ "interruptStagger", &settings::config::interruptStagger },
         setting_definition<bool>{ "meleeInterruptEnabled", &settings::config::meleeInterruptEnabled },
         setting_definition<bool>{ "rangedInterruptEnabled", &settings::config::rangedInterruptEnabled },
         setting_definition<float>{ "baseInterruptChance", &settings::config::baseInterruptChance },
