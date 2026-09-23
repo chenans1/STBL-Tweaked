@@ -1,5 +1,7 @@
 #include "PCH.h"
 #include "settings.h"
+#include "utils.h"
+
 #include <SimpleIni.h>
 #include <SKSEMenuFramework.h>
 #include <algorithm>
@@ -151,6 +153,17 @@ namespace settings {
         return std::clamp(chance, 0.0f, std::clamp(current.maxInterruptChance, 0.0f, 1.0f));
     }
 
+    static float calculateDisplayedReflectionChance(const config& current, float blockSkill, bool isSpell) {
+        float chance = current.baseReflectionChance * (1.0f + blockSkill * current.reflectionSkillFactor / 100.0f);
+
+        chance *= isSpell ? current.spellReflectionMult : current.arrowReflectionMult;
+        if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+            chance *= utils::handlePEPE(player, isSpell ? "STBLReflectionChanceSpell" : "STBLReflectionChanceArrow");
+        }
+
+        return std::clamp(chance, 0.0f, 1.0f);
+    }
+
     void __stdcall RenderMenuPage() {
         config current = Get();
         bool changed = false;
@@ -206,6 +219,9 @@ namespace settings {
         changed |= ImGuiMCP::SliderFloat("Spell reflection chance multiplier", &current.spellReflectionMult, 0.0f, 5.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Arrow Cost Reflection multiplier", &current.arrowReflectionCostMult, 0.0f, 5.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Spell Cost Reflection multiplier", &current.spellCostReflectionMult, 0.0f, 5.0f, "%.2f");
+
+        ImGuiMCP::Text("Arrow reflection chance: %.1f%%", calculateDisplayedReflectionChance(current, playerBlockSkill, false) * 100.0f);
+        ImGuiMCP::Text("Spell reflection chance: %.1f%%", calculateDisplayedReflectionChance(current, playerBlockSkill, true) * 100.0f);
 
         ImGuiMCP::Separator();
         changed |= ImGuiMCP::Checkbox("Enable diagnostic logging", &current.log);
