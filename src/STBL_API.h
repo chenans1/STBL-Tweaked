@@ -43,6 +43,8 @@ namespace STBL_API {
         // Multiplier applied to incoming damage:
         // 1.0 = unchanged, 0.5 = half damage, 0.0 = no damage.
         float damageMultiplier = 1.0f;
+
+        bool reflectProjectile = false;
         [[nodiscard]] bool Triggered() const noexcept {
             return outcome != TimedBlockOutcome::NotTriggered;
         }
@@ -50,6 +52,11 @@ namespace STBL_API {
         [[nodiscard]] bool FullyBlocked() const noexcept {
             return outcome == TimedBlockOutcome::FullyBlocked;
         }
+        
+        [[nodiscard]] bool ShouldReflect() const noexcept {
+            return Triggered() && reflectProjectile;
+        }
+
     };
 
     class STBL {

@@ -195,6 +195,18 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.2f");
+
+        ImGuiMCP::Separator();
+        changed |= ImGuiMCP::Checkbox("Enable Arrow Reflection", &current.reflectArrows);
+        changed |= ImGuiMCP::Checkbox("Enable Spell (missile, cone) Reflection", &current.reflectSpells);
+        ImGuiMCP::TextUnformatted("reflection chance = base * (1 + block skill * factor / 100) * applicable multipliers");
+        changed |= ImGuiMCP::SliderFloat("base reflection Chance", &current.baseReflectionChance, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("block Skill Factor", &current.reflectionSkillFactor, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Arrow reflection chance multiplier", &current.arrowReflectionMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Spell reflection chance multiplier", &current.spellReflectionMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Arrow Cost Reflection multiplier", &current.arrowReflectionCostMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Spell Cost Reflection multiplier", &current.spellCostReflectionMult, 0.0f, 5.0f, "%.2f");
+
         ImGuiMCP::Separator();
         changed |= ImGuiMCP::Checkbox("Enable diagnostic logging", &current.log);
         FinishMenuPage(current, changed);

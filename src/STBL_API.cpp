@@ -95,6 +95,22 @@ namespace {
         }
     }
 
+    [[nodiscard]] bool checkReflectionRequirement(AttackType attackType, const RE::Actor* defender, const settings::config& config) {
+        if (!defender) return false;
+        const auto& requirements = form_config::Get().reflectionPerks;
+        const auto& equippedRequirements = isUsingShield(defender) ? requirements.shield : requirements.nonShield;
+        switch (attackType) {
+            case AttackType::Spell:
+                return config.reflectSpells && equippedRequirements.spell.IsMetBy(defender);
+
+            case AttackType::Arrow:
+                return config.reflectArrows && equippedRequirements.arrow.IsMetBy(defender);
+
+            default:
+                return false;
+        }
+    }
+
     struct DamageSettings {
         bool preventAllDamage = false;
         float additionalDamageMultiplier = 1.0f;
@@ -185,6 +201,8 @@ namespace {
             result.outcome = TimedBlockOutcome::Reduced;
             result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
         }
+
+        result.reflectProjectile = checkReflectionRequirement(request.attackType, request.defender, config);
         return result;
     }
 

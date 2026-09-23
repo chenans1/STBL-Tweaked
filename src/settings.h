@@ -41,6 +41,14 @@ namespace settings {
 
         bool reflectArrows = true;
         bool reflectSpells = true;
+
+        //multipliers of the costs in animated projectile blocking
+        float baseReflectionChance = 0.25;
+        float reflectionSkillFactor = 0.5f;
+        float arrowReflectionMult = 1.0f;
+        float spellReflectionMult = 0.8f;
+        float arrowReflectionCostMult = 2.0f;
+        float spellCostReflectionMult =  2.5f; 
     };
     
     template <class T>
@@ -84,6 +92,13 @@ namespace settings {
 
         setting_definition<bool>{ "reflectArrows", &settings::config::reflectArrows },
         setting_definition<bool>{ "reflectSpells", &settings::config::reflectSpells },
+        setting_definition<float>{ "baseReflectionChance", &settings::config::baseReflectionChance },
+        setting_definition<float>{ "reflectionSkillFactor", &settings::config::reflectionSkillFactor },
+        setting_definition<float>{ "arrowReflectionMult", &settings::config::arrowReflectionMult },
+        setting_definition<float>{ "spellReflectionMult", &settings::config::spellReflectionMult },
+        setting_definition<float>{ "arrowReflectionCostMult", &settings::config::arrowReflectionCostMult },
+        setting_definition<float>{ "spellCostReflectionMult", &settings::config::spellCostReflectionMult },
+
     };
 
     config Get();
