@@ -14,13 +14,12 @@ void applyWindowDuration() {
 //doing this allows for native dual wield block key compat. 
 bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName) {
     static const RE::BSFixedString blockStartEvent{ "blockStart" }; //should optimize it a bit, point check instead of str compare?
-
+    static auto* const player = RE::PlayerCharacter::GetSingleton();
     const bool result = _PC_NotifyAnimationGraph(a_this, a_eventName);
     if (!result) return result;
     if (a_eventName == blockStartEvent) {
         //apply timedblock MGEF
-        // SKSE::log::info("APPLYING TIMED BLOCK MGEF!");
-        if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+        if (player) {
             if (auto* caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)) {
                 applyWindowDuration();
                 caster->CastSpellImmediate(hooks::timedBlockWindowSpell, true, player, 1.0f, false, 0.0f, player);
