@@ -17,6 +17,7 @@ namespace form_config {
         constexpr auto defaultParrySpell = "SimpleTimedBlock.esp ~ 0x802";
         constexpr auto defaultParryWindow = "SimpleTimedBlock.esp ~ 0x801";
         constexpr auto defaultStaggerSpell = "SimpleTimedBlock.esp ~ 0x803";
+        constexpr auto defaultTimedBlockBuffSpell = "SimpleTimedBlock.esp ~ 0x80B";
         constexpr auto defaultExplosion = "SimpleTimedBlock.esp ~ 0x805";
         constexpr auto defaultSound = "SimpleTimedBlock.esp ~ 0x807";
 
@@ -107,6 +108,7 @@ namespace form_config {
             ini.SetValue(coreSection, "ParrySpell", defaultParrySpell);
             ini.SetValue(coreSection, "ParryWindow", defaultParryWindow);
             ini.SetValue(coreSection, "StaggerSpell", defaultStaggerSpell);
+            ini.SetValue(coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell);
             ini.SetValue(coreSection, "TimedBlockExplosion", defaultExplosion);
             ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
             ini.SetValue(perkSection, "ShieldMelee", "");
@@ -165,6 +167,7 @@ namespace form_config {
         loaded.core.parrySpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "ParrySpell", defaultParrySpell), "Core/ParrySpell");
         loaded.core.parryWindow = loadForm<RE::EffectSetting>(readSetting(ini, coreSection, "ParryWindow", defaultParryWindow), "Core/ParryWindow");
         loaded.core.staggerSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "StaggerSpell", defaultStaggerSpell), "Core/StaggerSpell");
+        loaded.core.timeBlockBuffSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell), "Core/TimedBlockBuffSpell");
         loaded.core.timedBlockExplosion = loadForm<RE::BGSExplosion>(readSetting(ini, coreSection, "TimedBlockExplosion", defaultExplosion), "Core/TimedBlockExplosion");
         loaded.core.timedBlockSound = loadForm<RE::BGSSoundDescriptorForm>(readSetting(ini, coreSection, "TimedBlockSound", defaultSound), "Core/TimedBlockSound");
 
@@ -182,6 +185,7 @@ namespace form_config {
         loaded.reflectionPerks.nonShield.arrow = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "NonShieldArrow"), "non-shield arrow reflection");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
+            !loaded.core.timeBlockBuffSpell ||
             !loaded.core.timedBlockExplosion || !loaded.core.timedBlockSound) {
             SKSE::log::critical("[forms] One or more required [Core] forms could not be loaded");
             return false;

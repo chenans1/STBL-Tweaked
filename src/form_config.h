@@ -7,7 +7,12 @@ namespace form_config {
         RE::BGSPerk* perk = nullptr;
         bool configured = false;
 
-        [[nodiscard]] bool IsMetBy(const RE::Actor* actor) const {
+        bool IsMetBy(const RE::Actor* actor) const {
+            if (actor && actor->HasPerk(perk)) {
+                SKSE::log::info("[IsMetBy] has perk {:0X}", perk->GetFormID());
+            } else {
+                SKSE::log::info("[IsMetBy] not configured");
+            }
             return !configured || (actor && actor->HasPerk(perk));
         }
     };
@@ -16,8 +21,10 @@ namespace form_config {
         RE::SpellItem* parrySpell = nullptr;
         RE::EffectSetting* parryWindow = nullptr;
         RE::SpellItem* staggerSpell = nullptr;
+        RE::SpellItem* timeBlockBuffSpell = nullptr;
         RE::BGSExplosion* timedBlockExplosion = nullptr;
         RE::BGSSoundDescriptorForm* timedBlockSound = nullptr;
+
     };
 
     struct AttackTypePerkRequirements {
@@ -53,5 +60,5 @@ namespace form_config {
     // Loads and resolves every configured form. Missing files are created with
     // defaults that preserve Simple Timed Block's current forms.
     bool Load();
-    [[nodiscard]] const Config& Get();
+    const Config& Get();
 }
