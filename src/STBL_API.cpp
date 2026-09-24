@@ -55,7 +55,12 @@ namespace {
 
     [[nodiscard]] bool checkFullyBlockedRequirement(AttackType attackType, const RE::Actor* actor) {
         const auto& perks = form_config::Get().perks;
-        const auto& attackPerks = isUsingShield(actor) ? perks.shield : perks.nonShield;
+        const bool usingShield = isUsingShield(actor);
+        const auto& attackPerks = usingShield ? perks.shield : perks.nonShield;
+        if (settings::Get().log) {
+            SKSE::log::info("[checkFullyBlockedRequirement] attackType={} usingShield={}",
+                static_cast<int>(attackType), usingShield);
+        }
 
         switch (attackType) {
             case STBL_API::AttackType::Melee:
@@ -225,6 +230,7 @@ namespace {
 
         if (damageSettings.preventAllDamage && hasRequiredPerk) {
             result.outcome = TimedBlockOutcome::FullyBlocked;
+            SKSE::log::info("[evaluateTimedBlock]: fully blocked");
             result.damageMultiplier = 0.0F;
         } else {
             result.outcome = TimedBlockOutcome::Reduced;

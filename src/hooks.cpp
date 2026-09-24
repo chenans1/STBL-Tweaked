@@ -35,7 +35,19 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     if (actor != player || !hitData.flags.any(RE::HitData::Flag::kBlocked)) {
         return _ProcessHit(actor, hitData);
     }
-
+    if (auto weapon = hitData.weapon) {
+        if (weapon->IsBow() || weapon->IsCrossbow()) {
+            // if (settings::Get().log) {
+            //     float deflectChance = 0.0f;
+            //     RE::BGSEntryPoint::HandleEntryPoint(
+            //         RE::BGSEntryPoint::ENTRY_POINT::kModShieldDeflectArrowChance,
+            //         player,
+            //         &deflectChance);
+            //     SKSE::log::info("[processHit] ranged hit data, ignore; shieldDeflectArrowChance={}", deflectChance);
+            // }
+            return _ProcessHit(actor, hitData);
+        }
+    }
     static auto* timedBlockAPI = STBL_API::RequestInterface();
     if (!timedBlockAPI) {
         SKSE::log::error("[processHit] Could not acquire the local STBL API");

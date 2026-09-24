@@ -202,7 +202,7 @@ namespace settings {
         ImGuiMCP::Text("Ranged interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, true) * 100.0f);
         ImGuiMCP::Text("Ranged interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, true) * 100.0f);
 
-        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.staggerMagnitudeOverride, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");

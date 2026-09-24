@@ -8,12 +8,14 @@ namespace form_config {
         bool configured = false;
 
         bool IsMetBy(const RE::Actor* actor) const {
-            if (actor && actor->HasPerk(perk)) {
-                SKSE::log::info("[IsMetBy] has perk {:0X}", perk->GetFormID());
-            } else {
-                SKSE::log::info("[IsMetBy] not configured");
+            if (!configured) {
+                // SKSE::log::info("[IsMetBy] unrestricted");
+                return true;
             }
-            return !configured || (actor && actor->HasPerk(perk));
+
+            const bool hasPerk = actor && perk && actor->HasPerk(perk);
+            // SKSE::log::info("[IsMetBy] required perk {:08X}, hasPerk={}", perk ? perk->GetFormID() : 0, hasPerk);
+            return hasPerk;
         }
     };
 
