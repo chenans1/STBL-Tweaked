@@ -158,7 +158,7 @@ namespace settings {
 
         chance *= isSpell ? current.spellReflectionMult : current.arrowReflectionMult;
         if (auto* player = RE::PlayerCharacter::GetSingleton()) {
-            chance *= utils::handlePEPE(player, isSpell ? "STBLReflectionChanceSpell" : "STBLReflectionChanceArrow");
+            chance *= utils::handlePEPE(player, isSpell ? "STBLReflectionChanceSpell" : "STBLReflectionChanceArrow", true);
         }
 
         return std::clamp(chance, 0.0f, 1.0f);
@@ -174,9 +174,9 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("Prevent All Melee Damage", &current.preventAllDamage);
         changed |= ImGuiMCP::Checkbox("Prevent All Spell Damage", &current.preventAllDamageSpells);
         changed |= ImGuiMCP::Checkbox("Prevent All Arrow Damage", &current.preventAllDamageArrows);
-        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Mult", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Mult", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Mult", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Taken Mulitplier", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Taken Mulitplier", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Taken Mulitplier", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");

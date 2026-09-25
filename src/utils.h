@@ -130,12 +130,12 @@ namespace utils {
     // GROUP__STBLReflectionChanceSpell
     // GROUP__STBLReflectionCostArrow
     // GROUP__STBLReflectionCostSpell
-    inline static float handlePEPE(RE::Actor* actor, std::string_view category) {
+    inline static float handlePEPE(RE::Actor* actor, std::string_view category, bool fromMenu = false) {
         float multiplier = 1.0f;
         const auto result = RE::HandleEntryPoint(RE::PerkEntryPoint::kModTelekinesisDistance, actor, multiplier, category);
-        // if (settings::Get().log) {
-        //     SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
-        // }
+        if (settings::Get().log && !fromMenu) {
+            SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
+        }
         return (std::max)(0.0f, multiplier);
     }
 }
