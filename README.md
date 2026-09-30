@@ -1,7 +1,4 @@
-My Personal SKSE plugin template that i created by cloning my original msco template and then deleting all the stuff i dont use
-# SKSE Plugin Template
-
-A minimal CMake + CommonLibVR-ng + SKSE template for Skyrim SE plugins.
+Simple Timed Block with some tweaks and additional features, notably hit stop, random stagger (from simple timed block addons) and projectile timed block. 
 
 ## Quick start
 
