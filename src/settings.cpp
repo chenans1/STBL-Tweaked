@@ -1,5 +1,7 @@
 #include "PCH.h"
 #include "settings.h"
+#include "utils.h"
+
 #include <SimpleIni.h>
 #include <SKSEMenuFramework.h>
 #include <algorithm>
@@ -151,6 +153,17 @@ namespace settings {
         return std::clamp(chance, 0.0f, std::clamp(current.maxInterruptChance, 0.0f, 1.0f));
     }
 
+    static float calculateDisplayedReflectionChance(const config& current, float blockSkill, bool isSpell) {
+        float chance = current.baseReflectionChance * (1.0f + blockSkill * current.reflectionSkillFactor / 100.0f);
+
+        chance *= isSpell ? current.spellReflectionMult : current.arrowReflectionMult;
+        if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+            chance *= utils::handlePEPE(player, isSpell ? "STBLReflectionChanceSpell" : "STBLReflectionChanceArrow", true);
+        }
+
+        return std::clamp(chance, 0.0f, 1.0f);
+    }
+
     void __stdcall RenderMenuPage() {
         config current = Get();
         bool changed = false;
@@ -161,17 +174,16 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("Prevent All Melee Damage", &current.preventAllDamage);
         changed |= ImGuiMCP::Checkbox("Prevent All Spell Damage", &current.preventAllDamageSpells);
         changed |= ImGuiMCP::Checkbox("Prevent All Arrow Damage", &current.preventAllDamageArrows);
-        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Mult", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Mult", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Mult", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Damage Taken Mulitplier", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Taken Mulitplier", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Taken Mulitplier", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
         
-        ImGuiMCP::TextUnformatted("Single target stagger, chance roll. Recoiling ranged targets requires behavior patch.");
-        ImGuiMCP::TextUnformatted("interrupt chance = base * (1 + block skill * factor / 100) * applicable multipliers");
+        ImGuiMCP::TextUnformatted("Single target stagger, chance roll");
+        ImGuiMCP::TextUnformatted("Interruption chance = base * (1 + block skill * factor / 100) * applicable multipliers");
         changed |= ImGuiMCP::Checkbox("Attacker Interruption", &current.enableInterrupt);
-        changed |= ImGuiMCP::Checkbox("Interruption is stagger instead of recoil/interruptCast", &current.interruptStagger);
         changed |= ImGuiMCP::Checkbox("Melee Interruption Enabled", &current.meleeInterruptEnabled);
         changed |= ImGuiMCP::Checkbox("Ranged Interruption Enabled", &current.rangedInterruptEnabled);
         changed |= ImGuiMCP::SliderFloat("base Interrupt Chance", &current.baseInterruptChance, 0.0f, 1.0f, "%.2f");
@@ -190,11 +202,26 @@ namespace settings {
         ImGuiMCP::Text("Ranged interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, true) * 100.0f);
         ImGuiMCP::Text("Ranged interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, true) * 100.0f);
 
-        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.staggerMagnitudeOverride, 0.0f, 1.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.2f");
+
+        ImGuiMCP::Separator();
+        changed |= ImGuiMCP::Checkbox("Enable Arrow Reflection", &current.reflectArrows);
+        changed |= ImGuiMCP::Checkbox("Enable Spell (missile, cone) Reflection", &current.reflectSpells);
+        ImGuiMCP::TextUnformatted("reflection chance = base * (1 + block skill * factor / 100) * applicable multipliers");
+        changed |= ImGuiMCP::SliderFloat("base reflection Chance", &current.baseReflectionChance, 0.0f, 1.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("block Skill Factor", &current.reflectionSkillFactor, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Arrow reflection chance multiplier", &current.arrowReflectionMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Spell reflection chance multiplier", &current.spellReflectionMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Arrow Cost Reflection multiplier", &current.arrowReflectionCostMult, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Spell Cost Reflection multiplier", &current.spellCostReflectionMult, 0.0f, 5.0f, "%.2f");
+
+        ImGuiMCP::Text("Arrow reflection chance: %.1f%%", calculateDisplayedReflectionChance(current, playerBlockSkill, false) * 100.0f);
+        ImGuiMCP::Text("Spell reflection chance: %.1f%%", calculateDisplayedReflectionChance(current, playerBlockSkill, true) * 100.0f);
+
         ImGuiMCP::Separator();
         changed |= ImGuiMCP::Checkbox("Enable diagnostic logging", &current.log);
         FinishMenuPage(current, changed);

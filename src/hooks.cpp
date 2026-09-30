@@ -7,20 +7,21 @@
 void applyWindowDuration() {
     if (hooks::timedBlockWindowMGEF) {
         const auto config = settings::Get();
-        hooks::timedBlockWindowMGEF->data.taperDuration = std::clamp(config.timedBlockWindow, 0.0f, 1.0f);
+        if (config.timedBlockWindow > 0.0f) {
+            hooks::timedBlockWindowMGEF->data.taperDuration = std::clamp(config.timedBlockWindow, 0.0f, 1.0f);
+        }
     }
 }
 
 //doing this allows for native dual wield block key compat. 
 bool hooks::PC_NotifyAnimationGraph(RE::IAnimationGraphManagerHolder* a_this, const RE::BSFixedString& a_eventName) {
     static const RE::BSFixedString blockStartEvent{ "blockStart" }; //should optimize it a bit, point check instead of str compare?
-
+    static auto* const player = RE::PlayerCharacter::GetSingleton();
     const bool result = _PC_NotifyAnimationGraph(a_this, a_eventName);
     if (!result) return result;
     if (a_eventName == blockStartEvent) {
         //apply timedblock MGEF
-        // SKSE::log::info("APPLYING TIMED BLOCK MGEF!");
-        if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+        if (player) {
             if (auto* caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)) {
                 applyWindowDuration();
                 caster->CastSpellImmediate(hooks::timedBlockWindowSpell, true, player, 1.0f, false, 0.0f, player);
@@ -36,7 +37,11 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     if (actor != player || !hitData.flags.any(RE::HitData::Flag::kBlocked)) {
         return _ProcessHit(actor, hitData);
     }
-
+    if (auto source = hitData.sourceRef.get(); source && source->AsProjectile()) {
+        SKSE::log::info("[processHit] sourceRef is projectile");
+        return _ProcessHit(actor, hitData);
+    }
+    
     static auto* timedBlockAPI = STBL_API::RequestInterface();
     if (!timedBlockAPI) {
         SKSE::log::error("[processHit] Could not acquire the local STBL API");

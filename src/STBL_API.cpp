@@ -33,11 +33,6 @@ namespace {
         if (!attacker || !blocker) return false;
         if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
         if (attackType!=AttackType::Melee && !cfg.rangedInterruptEnabled) return false;
-        if (!utils::passesInterruptConditions(blocker, attacker)) {
-            if (cfg.log) {SKSE::log::info("[evalutateInterruption] blocker={:08X} attacker={:08X} does not pass conditions", 
-                    blocker ? blocker->GetFormID() : 0, attacker ? attacker->GetFormID() : 0);}
-            return false;
-        }
         const float blockSkill = (std::max)(0.0f, blocker->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
         float chance = cfg.baseInterruptChance * (1.0f + blockSkill * cfg.blockSkillFactor/100.0f);
         if (isUsingShield(blocker)) chance *= cfg.shieldInterruptMult;
@@ -51,34 +46,21 @@ namespace {
                     blocker ? blocker->GetFormID() : 0, dist, chance);}
             return false;}
         
-        if (cfg.interruptStagger) {
-            utils::overrideSTBLStagger(cfg.staggerMagnitudeOverride);
-            utils::ApplySpell(blocker, attacker, hooks::STBLTweakedStaggerSpell);
-            return true;
-        } else {
-            //technically not needed for the spells, the conditions will apply.
-            // if (!utils::passesInterruptConditions(blocker, attacker)) {
-            //     return false;
-            // }
-            switch (attackType) {
-                case STBL_API::AttackType::Melee:
-                    attacker->NotifyAnimationGraph("recoilLargeStart");
-                    return true;
-                case STBL_API::AttackType::Spell:
-                    attacker->NotifyAnimationGraph("InterruptCast");
-                    return true;
-                case STBL_API::AttackType::Arrow:
-                    attacker->NotifyAnimationGraph("recoilLargeStart");
-                    return true;
-                default:
-                    return false;
-            }
-        }
+        
+        utils::overrideSTBLStagger(cfg.staggerMagnitudeOverride);
+        utils::ApplySpell(blocker, attacker, hooks::STBLTweakedStaggerSpell);
+        return true;
+        
     }   
 
     [[nodiscard]] bool checkFullyBlockedRequirement(AttackType attackType, const RE::Actor* actor) {
         const auto& perks = form_config::Get().perks;
-        const auto& attackPerks = isUsingShield(actor) ? perks.shield : perks.nonShield;
+        const bool usingShield = isUsingShield(actor);
+        const auto& attackPerks = usingShield ? perks.shield : perks.nonShield;
+        if (settings::Get().log) {
+            SKSE::log::info("[checkFullyBlockedRequirement] attackType={} usingShield={}",
+                static_cast<int>(attackType), usingShield);
+        }
 
         switch (attackType) {
             case STBL_API::AttackType::Melee:
@@ -92,6 +74,74 @@ namespace {
 
             default:
                 return false;
+        }
+    }
+
+    [[nodiscard]] bool checkReflectionRequirement(AttackType attackType, RE::Actor* defender, const settings::config& config) {
+        if (!defender) return false;
+        const auto& requirements = form_config::Get().reflectionPerks;
+        const auto& equippedRequirements = isUsingShield(defender) ? requirements.shield : requirements.nonShield;
+        switch (attackType) {
+            case AttackType::Spell:
+                return config.reflectSpells && equippedRequirements.spell.IsMetBy(defender);
+
+            case AttackType::Arrow:
+                return config.reflectArrows && equippedRequirements.arrow.IsMetBy(defender);
+
+            default:
+                return false;
+        }
+    }
+
+    // Rolls reflection after the setting and equipment-specific perk gate pass.
+    [[nodiscard]] bool handleReflection(AttackType attackType, RE::Actor* defender, const settings::config& config) {
+        if (!checkReflectionRequirement(attackType, defender, config)) {
+            return false;
+        }
+
+        const float blockSkill = (std::max)(0.0f, defender->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
+        float chance = config.baseReflectionChance * (1.0f + blockSkill * config.reflectionSkillFactor/100.0f);
+        switch (attackType) {
+            case AttackType::Spell:
+                chance *= config.spellReflectionMult;
+                chance *= utils::handlePEPE(defender, "STBLReflectionChanceSpell");
+                break;
+            case AttackType::Arrow:
+                chance *= config.arrowReflectionMult;
+                chance *= utils::handlePEPE(defender, "STBLReflectionChanceArrow");
+                break;
+            default:
+                return false;
+        }
+
+        chance = std::clamp(chance, 0.0f, 1.0f);
+        thread_local std::mt19937 generator{ std::random_device{}() };
+        std::uniform_real_distribution<float> distribution{ 0.0f, 1.0f };
+        const float dist = distribution(generator);
+        const bool succeeded = dist < chance;
+        if (config.log) {
+            SKSE::log::info("[handleReflection] blocker={:08X} succeeded={} roll={} chance={}",
+                defender->GetFormID(), succeeded, dist, chance);
+        }
+        return succeeded;
+    }
+
+    // Returns only the extra reflection portion. The consumer remains
+    // responsible for adding this to its normal block resource cost.
+    [[nodiscard]] float getReflectionCostMultiplier(AttackType attackType, RE::Actor* defender, const settings::config& config) {
+        if (!defender) {
+            return 0.0f;
+        }
+
+        switch (attackType) {
+            case AttackType::Spell:
+                return (std::max)(0.0f, config.spellCostReflectionMult) *
+                       utils::handlePEPE(defender, "STBLReflectionCostSpell");
+            case AttackType::Arrow:
+                return (std::max)(0.0f, config.arrowReflectionCostMult) *
+                       utils::handlePEPE(defender, "STBLReflectionCostArrow");
+            default:
+                return 0.0f;
         }
     }
 
@@ -180,10 +230,16 @@ namespace {
 
         if (damageSettings.preventAllDamage && hasRequiredPerk) {
             result.outcome = TimedBlockOutcome::FullyBlocked;
+            SKSE::log::info("[evaluateTimedBlock]: fully blocked");
             result.damageMultiplier = 0.0F;
         } else {
             result.outcome = TimedBlockOutcome::Reduced;
             result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
+        }
+
+        result.reflectProjectile = handleReflection(request.attackType, request.defender, config);
+        if (result.reflectProjectile) {
+            result.reflectionCostMultiplier = getReflectionCostMultiplier(request.attackType, request.defender, config);
         }
         return result;
     }

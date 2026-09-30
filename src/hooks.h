@@ -60,7 +60,7 @@ class hooks {
             timedBlockWindowSpell = configured.parrySpell;
             timedBlockWindowMGEF = configured.parryWindow;
             timedBlockStaggerSpell = configured.staggerSpell;
-            timeBlockBuffSpell = dataHandler->LookupForm<RE::SpellItem>(0x80B, "SimpleTimedBlock.esp");
+            timeBlockBuffSpell = configured.timeBlockBuffSpell;
             timed_block_explosion = configured.timedBlockExplosion;
             timed_block_counter_glob = dataHandler->LookupForm<RE::TESGlobal>(0x80E, "SimpleTimedBlock.esp");
             timedBlockSFX = configured.timedBlockSound;

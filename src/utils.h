@@ -1,6 +1,7 @@
 #pragma once
 #include "hooks.h"
-
+#include "settings.h"
+#include "extern/PerkEntryPointExtenderAPI.h"
 
 namespace utils {
     inline static bool ApplySpell(RE::Actor* a_caster, RE::Actor* a_target, RE::SpellItem* a_spell) {
@@ -123,18 +124,18 @@ namespace utils {
         auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
         effect->SetMagnitude(overrideMag);
     }
-
-    inline static bool passesInterruptConditions(RE::Actor* a_blocker, RE::Actor* a_attacker) {
-        auto* effect = FindEffect(hooks::STBLTweakedStaggerSpell, hooks::STBLTweakedStaggerMGEF);
-        if (!effect || !a_blocker || !a_attacker) {
-            return false;
+    
+    // Handles Perk Entry Point Extender.
+    // GROUP__STBLReflectionChanceArrow
+    // GROUP__STBLReflectionChanceSpell
+    // GROUP__STBLReflectionCostArrow
+    // GROUP__STBLReflectionCostSpell
+    inline static float handlePEPE(RE::Actor* actor, std::string_view category, bool fromMenu = false) {
+        float multiplier = 1.0f;
+        const auto result = RE::HandleEntryPoint(RE::PerkEntryPoint::kModTelekinesisDistance, actor, multiplier, category);
+        if (settings::Get().log && !fromMenu) {
+            SKSE::log::info("[PEPE] category={} result={} value={}", category, static_cast<int>(result), multiplier);
         }
-
-        // Conditions placed on the 0x808 effect entry inside spell 0x809.
-        if (effect->conditions && !effect->conditions.IsTrue(a_attacker, a_blocker)) {
-            return false;
-        }
-
-        return true;
+        return (std::max)(0.0f, multiplier);
     }
 }

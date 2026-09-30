@@ -12,10 +12,12 @@ namespace form_config {
     namespace {
         constexpr auto coreSection = "Core";
         constexpr auto perkSection = "PerkRequirements";
+        constexpr auto reflectionPerkSection = "ReflectionPerkRequirements";
 
         constexpr auto defaultParrySpell = "SimpleTimedBlock.esp ~ 0x802";
         constexpr auto defaultParryWindow = "SimpleTimedBlock.esp ~ 0x801";
         constexpr auto defaultStaggerSpell = "SimpleTimedBlock.esp ~ 0x803";
+        constexpr auto defaultTimedBlockBuffSpell = "SimpleTimedBlock.esp ~ 0x80B";
         constexpr auto defaultExplosion = "SimpleTimedBlock.esp ~ 0x805";
         constexpr auto defaultSound = "SimpleTimedBlock.esp ~ 0x807";
 
@@ -87,7 +89,7 @@ namespace form_config {
         PerkRequirement loadPerkRequirement(std::string_view setting, std::string_view context) {
             setting = trim(setting);
             if (setting.empty()) {
-                SKSE::log::info("[perk requirement] {} timed blocking is unrestricted", context);
+                SKSE::log::info("[perk requirement] {} is unrestricted", context);
                 return {};
             }
 
@@ -106,6 +108,7 @@ namespace form_config {
             ini.SetValue(coreSection, "ParrySpell", defaultParrySpell);
             ini.SetValue(coreSection, "ParryWindow", defaultParryWindow);
             ini.SetValue(coreSection, "StaggerSpell", defaultStaggerSpell);
+            ini.SetValue(coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell);
             ini.SetValue(coreSection, "TimedBlockExplosion", defaultExplosion);
             ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
             ini.SetValue(perkSection, "ShieldMelee", "");
@@ -115,6 +118,10 @@ namespace form_config {
             ini.SetValue(perkSection, "NonShieldSpell", "");
             ini.SetValue(perkSection, "NonShieldArrow", "");
             ini.SetValue(perkSection, "Stagger", "");
+            ini.SetValue(reflectionPerkSection, "ShieldSpell", "");
+            ini.SetValue(reflectionPerkSection, "ShieldArrow", "");
+            ini.SetValue(reflectionPerkSection, "NonShieldSpell", "");
+            ini.SetValue(reflectionPerkSection, "NonShieldArrow", "");
 
             std::error_code ec;
             std::filesystem::create_directories(std::filesystem::path(requirementsPath).parent_path(), ec);
@@ -160,6 +167,7 @@ namespace form_config {
         loaded.core.parrySpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "ParrySpell", defaultParrySpell), "Core/ParrySpell");
         loaded.core.parryWindow = loadForm<RE::EffectSetting>(readSetting(ini, coreSection, "ParryWindow", defaultParryWindow), "Core/ParryWindow");
         loaded.core.staggerSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "StaggerSpell", defaultStaggerSpell), "Core/StaggerSpell");
+        loaded.core.timeBlockBuffSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell), "Core/TimedBlockBuffSpell");
         loaded.core.timedBlockExplosion = loadForm<RE::BGSExplosion>(readSetting(ini, coreSection, "TimedBlockExplosion", defaultExplosion), "Core/TimedBlockExplosion");
         loaded.core.timedBlockSound = loadForm<RE::BGSSoundDescriptorForm>(readSetting(ini, coreSection, "TimedBlockSound", defaultSound), "Core/TimedBlockSound");
 
@@ -171,7 +179,13 @@ namespace form_config {
         loaded.perks.nonShield.arrow = loadPerkRequirement(readPerkSetting(ini, "NonShieldArrow", "Arrow"), "non-shield arrow");
         loaded.perks.stagger = loadPerkRequirement(readSetting(ini, perkSection, "Stagger"), "AOE stagger");
 
+        loaded.reflectionPerks.shield.spell = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "ShieldSpell"), "shield spell reflection");
+        loaded.reflectionPerks.shield.arrow = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "ShieldArrow"), "shield arrow reflection");
+        loaded.reflectionPerks.nonShield.spell = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "NonShieldSpell"), "non-shield spell reflection");
+        loaded.reflectionPerks.nonShield.arrow = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "NonShieldArrow"), "non-shield arrow reflection");
+
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
+            !loaded.core.timeBlockBuffSpell ||
             !loaded.core.timedBlockExplosion || !loaded.core.timedBlockSound) {
             SKSE::log::critical("[forms] One or more required [Core] forms could not be loaded");
             return false;
