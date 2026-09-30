@@ -52,20 +52,26 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     const auto result = timedBlockAPI->TryTriggerTimedBlock({STBL_API::AttackType::Melee, attacker, player});
 
     if (result.Triggered()) {
-        hitData.totalDamage *= result.damageMultiplier;
-        hitData.criticalDamageMult *= result.damageMultiplier;
-        hitData.physicalDamage *= result.damageMultiplier;
-        hitData.percentBlocked = 1.0f;
-        hitData.stagger = 0.0f;
-        
-
+        float damageMultiplier = result.damageMultiplier;
         if (result.convertRemainingDamage) {
-            auto* actorAV = actor->AsActorValueOwner();
-            float stamina = actorAV->GetActorValue(RE::ActorValue::kStamina);
-            if (stamina >= (hitData.totalDamage * result.remainingDamageConversionPortion)) {
-                actorAV->DamageActorValue(RE::ActorValue::kStamina, (hitData.totalDamage * result.remainingDamageConversionPortion));
+            const float remainingDamage = (std::max)(0.0f, hitData.totalDamage * damageMultiplier);
+            const float staminaCost = remainingDamage * (std::max)(0.0f, result.remainingDamageConversionPortion);
+            auto* actorValueOwner = player->AsActorValueOwner();
+            if (remainingDamage > 0.0f && actorValueOwner &&
+                actorValueOwner->GetActorValue(RE::ActorValue::kStamina) >= staminaCost) {
+                if (staminaCost > 0.0f) {
+                    actorValueOwner->DamageActorValue(RE::ActorValue::kStamina, staminaCost);
+                }
+                damageMultiplier = 0.0f;
             }
         }
+
+        hitData.totalDamage *= damageMultiplier;
+        hitData.criticalDamageMult *= damageMultiplier;
+        hitData.physicalDamage *= damageMultiplier;
+        hitData.percentBlocked = 1.0f;
+        hitData.stagger = 0.0f;
+
         // if (result.FullyBlocked()) {
         //     hitData.totalDamage = 0.0f;
         //     hitData.criticalDamageMult = 0.0f;
