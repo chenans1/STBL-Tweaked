@@ -39,7 +39,9 @@ namespace settings {
 
         //convert all remaining damage to resource cost.
         bool convertRemaningDamage = false;
-        float convertedPortion = 1.0f; //% of the unblocked damage that is converted into resource cost
+        float meleeConvertedPortion = 1.0f; //% of the unblocked damage that is converted into resource cost
+        float arrowConvertedPortion = 1.0f;
+        float spellConvertedPortion = 1.0f;
 
         bool reflectArrows = false;
         bool reflectSpells = false;
@@ -94,7 +96,9 @@ namespace settings {
         setting_definition<bool>{ "preventAllDamageSpells", &settings::config::preventAllDamageSpells },
 
         setting_definition<bool>{ "convertRemaningDamage", &settings::config::convertRemaningDamage },
-        setting_definition<float>{ "convertedPortion", &settings::config::convertedPortion },
+        setting_definition<float>{ "meleeConvertedPortion", &settings::config::meleeConvertedPortion },
+        setting_definition<float>{ "arrowConvertedPortion", &settings::config::arrowConvertedPortion },
+        setting_definition<float>{ "spellConvertedPortion", &settings::config::spellConvertedPortion },
 
         setting_definition<bool>{ "reflectArrows", &settings::config::reflectArrows },
         setting_definition<bool>{ "reflectSpells", &settings::config::reflectSpells },

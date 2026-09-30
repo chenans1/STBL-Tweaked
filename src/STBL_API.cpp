@@ -178,6 +178,19 @@ namespace {
         }
     }
 
+    [[nodiscard]] float getConversion(AttackType attackType, const settings::config& config) {
+        switch (attackType) {
+            case AttackType::Melee:
+                return { config.meleeConvertedPortion };
+            case AttackType::Spell:
+                return { config.spellConvertedPortion };
+            case AttackType::Arrow:
+                return { config.arrowConvertedPortion };
+            default:
+                return {};
+        }
+    }
+
     [[nodiscard]] RE::SpellItem* getAttackerSpell(AttackType attackType) {
         switch (attackType) {
             case AttackType::Melee:
@@ -257,7 +270,7 @@ namespace {
         }
 
         result.convertRemainingDamage = config.convertRemaningDamage;
-        result.remainingDamageConversionPortion = config.convertedPortion;
+        result.remainingDamageConversionPortion = getConversion(request.attackType, config);
 
         result.reflectProjectile = handleReflection(request.attackType, request.defender, config);
         if (result.reflectProjectile) {
