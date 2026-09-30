@@ -256,6 +256,9 @@ namespace {
             result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
         }
 
+        result.convertRemainingDamage = config.convertRemaningDamage;
+        result.remainingDamageConversionPortion = config.convertedPortion;
+
         result.reflectProjectile = handleReflection(request.attackType, request.defender, config);
         if (result.reflectProjectile) {
             result.reflectionCostMultiplier = getReflectionCostMultiplier(request.attackType, request.defender, config);

@@ -38,7 +38,7 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         return _ProcessHit(actor, hitData);
     }
     if (auto source = hitData.sourceRef.get(); source && source->AsProjectile()) {
-        SKSE::log::info("[processHit] sourceRef is projectile");
+        // SKSE::log::info("[processHit] sourceRef is projectile");
         return _ProcessHit(actor, hitData);
     }
     
@@ -57,7 +57,15 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         hitData.physicalDamage *= result.damageMultiplier;
         hitData.percentBlocked = 1.0f;
         hitData.stagger = 0.0f;
+        
 
+        if (result.convertRemainingDamage) {
+            auto* actorAV = actor->AsActorValueOwner();
+            float stamina = actorAV->GetActorValue(RE::ActorValue::kStamina);
+            if (stamina >= (hitData.totalDamage * result.remainingDamageConversionPortion)) {
+                actorAV->DamageActorValue(RE::ActorValue::kStamina, (hitData.totalDamage * result.remainingDamageConversionPortion));
+            }
+        }
         // if (result.FullyBlocked()) {
         //     hitData.totalDamage = 0.0f;
         //     hitData.criticalDamageMult = 0.0f;

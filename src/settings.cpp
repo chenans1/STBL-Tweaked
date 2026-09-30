@@ -177,6 +177,9 @@ namespace settings {
         changed |= ImGuiMCP::SliderFloat("Timed Block Damage Taken Mulitplier", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Taken Mulitplier", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Taken Mulitplier", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
+        
+        changed |= ImGuiMCP::Checkbox("convert remaining timed block damage to resource cost", &current.convertRemaningDamage);
+        changed |= ImGuiMCP::SliderFloat("Portion of remaining damage converted to resource cost", &current.convertedPortion, 0.0f, 5.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");

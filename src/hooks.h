@@ -34,9 +34,9 @@ class hooks {
             //hitdata hook from valhalla combat & stbl
             // SKSE::log::info("Installing Attempting to install processHit hook...");
             auto& trampoline = SKSE::GetTrampoline();
-            {   
+            {
 			    _ProcessHit = trampoline.write_call<5>(REL::RelocationID(37673, 38627).address() + REL::Relocate(0x3C0, 0x4A8), processHit);
-            }            
+            }
             // SKSE::log::info("Installed processHit hook. ");
             
             // anim speed hooks from simple timed block addons
