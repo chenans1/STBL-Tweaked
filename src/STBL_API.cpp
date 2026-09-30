@@ -29,6 +29,21 @@ namespace {
         return armor && armor->IsShield();
     }
 
+    [[nodiscard]] const std::vector<RE::BGSExplosion*>& getBlockerVFX(const RE::Actor* blocker) {
+        const auto& vfx = form_config::Get().vfx;
+        if (isUsingShield(blocker)) {
+            return vfx.shield;
+        }
+        if (blocker) {
+            const auto* leftHand = blocker->GetEquippedObject(true);
+            const auto* rightHand = blocker->GetEquippedObject(false);
+            if ((leftHand && leftHand->IsWeapon()) || (rightHand && rightHand->IsWeapon())) {
+                return vfx.weapon;
+            }
+        }
+        return vfx.otherwise;
+    }
+
     static bool evalutateInterruption(RE::Actor* blocker, RE::Actor* attacker, AttackType attackType, const settings::config& cfg) {
         if (!attacker || !blocker) return false;
         if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
@@ -186,7 +201,11 @@ namespace {
 
         const auto cfg = settings::Get();
         if (cfg.applyTimedBlockVFX) {
-            defender->PlaceObjectAtMe(hooks::timed_block_explosion, false);
+            for (auto* explosion : getBlockerVFX(defender)) {
+                if (explosion) {
+                    defender->PlaceObjectAtMe(explosion, false);
+                }
+            }
         }
 
         if (cfg.applyTimedBlockSFX) {

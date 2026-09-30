@@ -7,18 +7,21 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace form_config {
     namespace {
         constexpr auto coreSection = "Core";
         constexpr auto perkSection = "PerkRequirements";
         constexpr auto reflectionPerkSection = "ReflectionPerkRequirements";
+        constexpr auto vfxSection = "VFX";
 
         constexpr auto defaultParrySpell = "SimpleTimedBlock.esp ~ 0x802";
         constexpr auto defaultParryWindow = "SimpleTimedBlock.esp ~ 0x801";
         constexpr auto defaultStaggerSpell = "SimpleTimedBlock.esp ~ 0x803";
         constexpr auto defaultTimedBlockBuffSpell = "SimpleTimedBlock.esp ~ 0x80B";
-        constexpr auto defaultExplosion = "SimpleTimedBlock.esp ~ 0x805";
+        constexpr auto defaultShieldExplosions = "SimpleTimedBlock.esp ~ 0x808, SimpleTimedBlock.esp ~ 0x809";
+        constexpr auto defaultWeaponExplosions = "SimpleTimedBlock.esp ~ 0x805, SimpleTimedBlock.esp ~ 0x806";
         constexpr auto defaultSound = "SimpleTimedBlock.esp ~ 0x807";
 
         Config activeConfig{};
@@ -86,6 +89,26 @@ namespace form_config {
             return form;
         }
 
+        std::vector<RE::BGSExplosion*> loadExplosionList(std::string_view setting, std::string_view context) {
+            std::vector<RE::BGSExplosion*> forms;
+            while (!setting.empty()) {
+                const auto separator = setting.find(',');
+                auto entry = trim(setting.substr(0, separator));
+                if (!entry.empty()) {
+                    if (auto* form = loadForm<RE::BGSExplosion>(entry, context)) {
+                        forms.push_back(form);
+                    } else {
+                        SKSE::log::warn("[VFX] Skipping invalid {} entry '{}'", context, entry);
+                    }
+                }
+                if (separator == std::string_view::npos) {
+                    break;
+                }
+                setting.remove_prefix(separator + 1);
+            }
+            return forms;
+        }
+
         PerkRequirement loadPerkRequirement(std::string_view setting, std::string_view context) {
             setting = trim(setting);
             if (setting.empty()) {
@@ -109,8 +132,10 @@ namespace form_config {
             ini.SetValue(coreSection, "ParryWindow", defaultParryWindow);
             ini.SetValue(coreSection, "StaggerSpell", defaultStaggerSpell);
             ini.SetValue(coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell);
-            ini.SetValue(coreSection, "TimedBlockExplosion", defaultExplosion);
             ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
+            ini.SetValue(vfxSection, "shield", defaultShieldExplosions);
+            ini.SetValue(vfxSection, "weapon", defaultWeaponExplosions);
+            ini.SetValue(vfxSection, "else", defaultWeaponExplosions);
             ini.SetValue(perkSection, "ShieldMelee", "");
             ini.SetValue(perkSection, "ShieldSpell", "");
             ini.SetValue(perkSection, "ShieldArrow", "");
@@ -168,8 +193,11 @@ namespace form_config {
         loaded.core.parryWindow = loadForm<RE::EffectSetting>(readSetting(ini, coreSection, "ParryWindow", defaultParryWindow), "Core/ParryWindow");
         loaded.core.staggerSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "StaggerSpell", defaultStaggerSpell), "Core/StaggerSpell");
         loaded.core.timeBlockBuffSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell), "Core/TimedBlockBuffSpell");
-        loaded.core.timedBlockExplosion = loadForm<RE::BGSExplosion>(readSetting(ini, coreSection, "TimedBlockExplosion", defaultExplosion), "Core/TimedBlockExplosion");
         loaded.core.timedBlockSound = loadForm<RE::BGSSoundDescriptorForm>(readSetting(ini, coreSection, "TimedBlockSound", defaultSound), "Core/TimedBlockSound");
+
+        loaded.vfx.shield = loadExplosionList(readSetting(ini, vfxSection, "shield", defaultShieldExplosions), "VFX/shield");
+        loaded.vfx.weapon = loadExplosionList(readSetting(ini, vfxSection, "weapon", defaultWeaponExplosions), "VFX/weapon");
+        loaded.vfx.otherwise = loadExplosionList(readSetting(ini, vfxSection, "else", defaultWeaponExplosions), "VFX/else");
 
         loaded.perks.shield.melee = loadPerkRequirement(readPerkSetting(ini, "ShieldMelee", "Melee"), "shield melee");
         loaded.perks.shield.spell = loadPerkRequirement(readPerkSetting(ini, "ShieldSpell", "Spell"), "shield spell");
@@ -185,8 +213,7 @@ namespace form_config {
         loaded.reflectionPerks.nonShield.arrow = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "NonShieldArrow"), "non-shield arrow reflection");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
-            !loaded.core.timeBlockBuffSpell ||
-            !loaded.core.timedBlockExplosion || !loaded.core.timedBlockSound) {
+            !loaded.core.timeBlockBuffSpell || !loaded.core.timedBlockSound) {
             SKSE::log::critical("[forms] One or more required [Core] forms could not be loaded");
             return false;
         }
