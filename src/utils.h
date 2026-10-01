@@ -37,6 +37,9 @@ namespace utils {
         handle.soundID = static_cast<uint32_t>(-1);
         handle.assumeSuccess = false;
         handle.state = RE::BSSoundHandle::AssumedState::kInitialized;
+        if (!actor || !sound_form) {
+            return handle;
+        }
         /*assumption: not doing this causes the game to crash if the audio engine is paused,
         eg: always active, mute on focus loss mod installed, tab out during casting*/
         auto audio_manager = RE::BSAudioManager::GetSingleton();

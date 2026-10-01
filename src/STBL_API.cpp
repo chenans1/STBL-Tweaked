@@ -44,6 +44,21 @@ namespace {
         return vfx.otherwise;
     }
 
+    [[nodiscard]] RE::BGSSoundDescriptorForm* getBlockerSound(const RE::Actor* blocker) {
+        const auto& sounds = form_config::Get().sounds;
+        if (isUsingShield(blocker)) {
+            return sounds.shield;
+        }
+        if (blocker) {
+            const auto* leftHand = blocker->GetEquippedObject(true);
+            const auto* rightHand = blocker->GetEquippedObject(false);
+            if ((leftHand && leftHand->IsWeapon()) || (rightHand && rightHand->IsWeapon())) {
+                return sounds.weapons;
+            }
+        }
+        return sounds.otherwise;
+    }
+
     static bool evalutateInterruption(RE::Actor* blocker, RE::Actor* attacker, AttackType attackType, const settings::config& cfg) {
         if (!attacker || !blocker) return false;
         if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
@@ -222,7 +237,7 @@ namespace {
         }
 
         if (cfg.applyTimedBlockSFX) {
-            utils::play_sound(defender, hooks::timedBlockSFX);
+            utils::play_sound(defender, getBlockerSound(defender));
         }
 
         const bool hasStaggerPerk = form_config::Get().perks.stagger.IsMetBy(defender);

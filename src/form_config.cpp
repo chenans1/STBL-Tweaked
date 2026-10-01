@@ -14,6 +14,7 @@ namespace form_config {
         constexpr auto coreSection = "Core";
         constexpr auto perkSection = "PerkRequirements";
         constexpr auto reflectionPerkSection = "ReflectionPerkRequirements";
+        constexpr auto soundSection = "SFX";
         constexpr auto vfxSection = "VFX";
 
         constexpr auto defaultParrySpell = "SimpleTimedBlock.esp ~ 0x802";
@@ -109,6 +110,20 @@ namespace form_config {
             return forms;
         }
 
+        RE::BGSSoundDescriptorForm* loadOptionalSound(std::string_view setting, std::string_view context) {
+            setting = trim(setting);
+            if (setting.empty()) {
+                SKSE::log::info("[SFX] {} is disabled", context);
+                return nullptr;
+            }
+
+            auto* sound = loadForm<RE::BGSSoundDescriptorForm>(setting, context);
+            if (!sound) {
+                SKSE::log::warn("[SFX] {} will be skipped because its sound form could not be loaded", context);
+            }
+            return sound;
+        }
+
         PerkRequirement loadPerkRequirement(std::string_view setting, std::string_view context) {
             setting = trim(setting);
             if (setting.empty()) {
@@ -132,7 +147,9 @@ namespace form_config {
             ini.SetValue(coreSection, "ParryWindow", defaultParryWindow);
             ini.SetValue(coreSection, "StaggerSpell", defaultStaggerSpell);
             ini.SetValue(coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell);
-            ini.SetValue(coreSection, "TimedBlockSound", defaultSound);
+            ini.SetValue(soundSection, "shield", defaultSound);
+            ini.SetValue(soundSection, "weapons", defaultSound);
+            ini.SetValue(soundSection, "else", defaultSound);
             ini.SetValue(vfxSection, "shield", defaultShieldExplosions);
             ini.SetValue(vfxSection, "weapon", defaultWeaponExplosions);
             ini.SetValue(vfxSection, "else", defaultWeaponExplosions);
@@ -193,7 +210,9 @@ namespace form_config {
         loaded.core.parryWindow = loadForm<RE::EffectSetting>(readSetting(ini, coreSection, "ParryWindow", defaultParryWindow), "Core/ParryWindow");
         loaded.core.staggerSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "StaggerSpell", defaultStaggerSpell), "Core/StaggerSpell");
         loaded.core.timeBlockBuffSpell = loadForm<RE::SpellItem>(readSetting(ini, coreSection, "TimedBlockBuffSpell", defaultTimedBlockBuffSpell), "Core/TimedBlockBuffSpell");
-        loaded.core.timedBlockSound = loadForm<RE::BGSSoundDescriptorForm>(readSetting(ini, coreSection, "TimedBlockSound", defaultSound), "Core/TimedBlockSound");
+        loaded.sounds.shield = loadOptionalSound(readSetting(ini, soundSection, "shield", defaultSound), "SFX/shield");
+        loaded.sounds.weapons = loadOptionalSound(readSetting(ini, soundSection, "weapons", defaultSound), "SFX/weapons");
+        loaded.sounds.otherwise = loadOptionalSound(readSetting(ini, soundSection, "else", defaultSound), "SFX/else");
 
         loaded.vfx.shield = loadExplosionList(readSetting(ini, vfxSection, "shield", defaultShieldExplosions), "VFX/shield");
         loaded.vfx.weapon = loadExplosionList(readSetting(ini, vfxSection, "weapon", defaultWeaponExplosions), "VFX/weapon");
@@ -213,7 +232,7 @@ namespace form_config {
         loaded.reflectionPerks.nonShield.arrow = loadPerkRequirement(readSetting(ini, reflectionPerkSection, "NonShieldArrow"), "non-shield arrow reflection");
 
         if (!loaded.core.parrySpell || !loaded.core.parryWindow || !loaded.core.staggerSpell ||
-            !loaded.core.timeBlockBuffSpell || !loaded.core.timedBlockSound) {
+            !loaded.core.timeBlockBuffSpell) {
             SKSE::log::critical("[forms] One or more required [Core] forms could not be loaded");
             return false;
         }
