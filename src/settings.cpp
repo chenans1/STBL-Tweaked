@@ -181,39 +181,54 @@ namespace settings {
         changed |= ImGuiMCP::Checkbox("Disable timed block during Bash", &current.disableWindowDuringBash);
 
         changed |= ImGuiMCP::Checkbox("convert remaining timed block damage to resource cost", &current.convertRemaningDamage);
-        changed |= ImGuiMCP::SliderFloat("Portion of remaining melee damage converted to resource cost", &current.meleeConvertedPortion, 0.0f, 5.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Portion of remaining arrow damage converted to resource cost", &current.arrowConvertedPortion, 0.0f, 5.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Portion of remaining spell damage converted to resource cost", &current.spellConvertedPortion, 0.0f, 5.0f, "%.2f");
+        if (current.convertRemaningDamage) {
+            changed |= ImGuiMCP::SliderFloat("Portion of remaining melee damage converted to resource cost", &current.meleeConvertedPortion, 0.0f, 5.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Portion of remaining arrow damage converted to resource cost", &current.arrowConvertedPortion, 0.0f, 5.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Portion of remaining spell damage converted to resource cost", &current.spellConvertedPortion, 0.0f, 5.0f, "%.2f");
+        }
 
-        changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
-        changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
+        changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled", &current.AOEStaggerEnabled);
+        if (current.AOEStaggerEnabled) {
+            changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");
+            changed |= ImGuiMCP::Checkbox("Exclude Direct Attacker From AOE Stagger Radius", &current.AOEStaggerExcludeAttacker);
+        }
         
         ImGuiMCP::TextUnformatted("Single target stagger, chance roll");
         ImGuiMCP::TextUnformatted("Interruption chance = base * (1 + block skill * factor / 100) * applicable multipliers");
         changed |= ImGuiMCP::Checkbox("Attacker Interruption", &current.enableInterrupt);
-        changed |= ImGuiMCP::Checkbox("Melee Interruption Enabled", &current.meleeInterruptEnabled);
-        changed |= ImGuiMCP::Checkbox("Ranged Interruption Enabled", &current.rangedInterruptEnabled);
-        changed |= ImGuiMCP::SliderFloat("base Interrupt Chance", &current.baseInterruptChance, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("block Skill Factor", &current.blockSkillFactor, 0.0f, 5.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Shield Interruption multiplier", &current.shieldInterruptMult, 0.0f, 5.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Ranged Interurption Multiplier", &current.rangedInterruptMult, 0.0f, 5.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Max Interrupt Chance", &current.maxInterruptChance, 0.0f, 1.0f, "%.2f");
 
         float playerBlockSkill = 0.0f;
         if (const auto* player = RE::PlayerCharacter::GetSingleton()) {
             playerBlockSkill = (std::max)(0.0f, player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kBlock));
         }
 
-        ImGuiMCP::Text("Melee interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, false) * 100.0f);
-        ImGuiMCP::Text("Melee interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, false) * 100.0f);
-        ImGuiMCP::Text("Ranged interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, true) * 100.0f);
-        ImGuiMCP::Text("Ranged interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, true) * 100.0f);
+        if (current.enableInterrupt) {
+            changed |= ImGuiMCP::Checkbox("Melee Interruption Enabled", &current.meleeInterruptEnabled);
+            changed |= ImGuiMCP::Checkbox("Ranged Interruption Enabled", &current.rangedInterruptEnabled);
+            changed |= ImGuiMCP::SliderFloat("base Interrupt Chance", &current.baseInterruptChance, 0.0f, 1.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("block Skill Factor", &current.blockSkillFactor, 0.0f, 5.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Shield Interruption multiplier", &current.shieldInterruptMult, 0.0f, 5.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Ranged Interurption Multiplier", &current.rangedInterruptMult, 0.0f, 5.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Max Interrupt Chance", &current.maxInterruptChance, 0.0f, 1.0f, "%.2f");
 
-        changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.staggerMagnitudeOverride, 0.0f, 1.0f, "%.2f");
+            ImGuiMCP::Text("Melee interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, false) * 100.0f);
+            ImGuiMCP::Text("Melee interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, false) * 100.0f);
+            ImGuiMCP::Text("Ranged interrupt chance: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, false, true) * 100.0f);
+            ImGuiMCP::Text("Ranged interrupt chance with shield: %.1f%%", calculateDisplayedInterruptChance(current, playerBlockSkill, true, true) * 100.0f);
 
+            changed |= ImGuiMCP::SliderFloat("Interrupt Stagger Magnitude Override", &current.staggerMagnitudeOverride, 0.0f, 1.0f, "%.2f");
+        }
+        
+        ImGuiMCP::TextUnformatted("Hitstop effect (animation speed slow down) on timed blocked attackers");
         changed |= ImGuiMCP::Checkbox("Attacker Histop Enabled", &current.attackerHistopEnabled);
-        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
-        changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.2f");
+        if (current.attackerHistopEnabled) {
+            changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown", &current.attackerSlowDownMult, 0.0f, 1.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Attacker Animation Slowdown Duration", &current.attackerSlowdownDuration, 0.0f, 1.0f, "%.2f");
+            changed |= ImGuiMCP::SliderFloat("Ranged Attacker Slowdown Duration", &current.rangedHitStopDuration, 0.0f, 1.0f, "%.2f");
+            changed |= ImGuiMCP::Checkbox("AOE Hitstop", &current.aoeHitStop);
+            changed |= ImGuiMCP::SliderFloat("AOE Hitstop Radius", &current.aoeHitStopRadius, 0.0f, 2048.0f, "%1.0f");
+        }
+        
 
         ImGuiMCP::Separator();
         changed |= ImGuiMCP::Checkbox("Enable Arrow Reflection", &current.reflectArrows);

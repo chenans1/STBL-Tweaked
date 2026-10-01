@@ -54,7 +54,27 @@ namespace utils {
         return handle;
     }
 
-    inline static void StaggerNearby(RE::Actor* a_defender, float radius) {
+    inline static bool isMelee(RE::Actor* actor) {
+       if (!actor) {
+            return false;
+        }
+        int rightHand = 0;
+        actor->GetGraphVariableInt("iRightHandType", rightHand);
+        return (rightHand <= 6);
+    }
+
+    inline void applyHitstopSpell(RE::Actor* attacker, RE::Actor* blocker, float duration) {
+        if (!attacker) {
+            return;
+        }
+        // SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
+        if (hooks::attackerHitStopMGEF) {
+            hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
+        }
+        utils::ApplySpell(blocker, attacker, hooks::attackerHitstopSpell);
+    }
+
+    inline static void ApplySpellRadius(RE::Actor* a_defender, float radius, RE::SpellItem* a_spell, RE::Actor* excluded = nullptr) {
         auto* cell = a_defender ? a_defender->GetParentCell() : nullptr;
         if (!cell || !cell->IsAttached() || radius <= 0.0f) {
             return;
@@ -62,14 +82,20 @@ namespace utils {
         radius = std::min(radius, 4095.0f);
         cell->ForEachReferenceInRange(a_defender->GetPosition(), radius, [&](RE::TESObjectREFR* ref){
             auto* actor = ref ? ref->As<RE::Actor>() : nullptr;
-            if (!actor || actor->IsDisabled() || !actor->Is3DLoaded() || actor == a_defender) {
+            if (!actor || actor->IsDisabled() || !actor->Is3DLoaded() || actor == a_defender || (excluded && actor == excluded)) {
                 return RE::BSContainer::ForEachResult::kContinue;
             }
             SKSE::log::info("[Utils] Staggering={:08X} ", actor ? actor->GetFormID() : 0);
-            ApplySpell(a_defender, actor, hooks::timedBlockStaggerSpell);
+
+            if (a_spell == hooks::attackerHitstopSpell) {
+                const auto cfg = settings::Get();
+                applyHitstopSpell(actor, a_defender, isMelee(actor) ? cfg.attackerSlowdownDuration : cfg.rangedHitStopDuration);
+            } else {
+                ApplySpell(a_defender, actor, a_spell);
+            }
             return RE::BSContainer::ForEachResult::kContinue;
         });
-    }   
+    }
 
     inline static bool hasMGEF(RE::Actor* actor, RE::EffectSetting* a_effect) {
         if (!actor || !a_effect) {
@@ -94,17 +120,6 @@ namespace utils {
         if (hooks::timed_block_counter_glob) {
             hooks::timed_block_counter_glob->value = safelyAddWithCap(hooks::timed_block_counter_glob->value, 1.0f, 5000.0f);
         }
-    }
-
-    inline void applyHitstopSpell(RE::Actor* attacker, RE::Actor* blocker, float duration) {
-        if (!attacker) {
-            return;
-        }
-        // SKSE::log::info("[applyHitstopSpell] applying hitstop spell to attacker");
-        if (hooks::attackerHitStopMGEF) {
-            hooks::attackerHitStopMGEF->data.taperDuration = std::clamp(duration, 0.0f, 1.0f);
-        }
-        utils::ApplySpell(blocker, attacker, hooks::attackerHitstopSpell);
     }
 
     inline static RE::Effect* FindEffect(RE::SpellItem* a_spell, RE::EffectSetting* a_mgef) {

@@ -17,6 +17,7 @@ namespace settings {
         float timedBlockWindow = 0.33f;
 
         bool AOEStaggerEnabled = true;
+        bool AOEStaggerExcludeAttacker = false;
         float AOEStaggerRadius = 256.0f;
         
         //Single target stagger spell with chance
@@ -31,8 +32,11 @@ namespace settings {
         float staggerMagnitudeOverride = 1.0f; //overrides the magnitude of SimpleTimedBlockTweaked.esp~0x809's 0x808 MGEF
 
         bool attackerHistopEnabled = true;
-        float attackerSlowDownMult = 0.05f;
-        float attackerSlowdownDuration = 0.5f;
+        float attackerSlowDownMult = 0.02f;
+        float attackerSlowdownDuration = 0.2f;
+        float rangedHitStopDuration = 0.66f;
+        bool aoeHitStop = false;
+        float aoeHitStopRadius = 256.0f;
 
         bool preventAllDamageArrows = true;
         bool preventAllDamageSpells = true;
@@ -79,6 +83,7 @@ namespace settings {
 
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
         setting_definition<float>{ "AOEStaggerRadius", &settings::config::AOEStaggerRadius },
+        setting_definition<bool>{ "AOEStaggerExcludeAttacker", &settings::config::AOEStaggerExcludeAttacker },
 
         setting_definition<bool>{ "enableInterrupt", &settings::config::enableInterrupt },
         setting_definition<bool>{ "meleeInterruptEnabled", &settings::config::meleeInterruptEnabled },
@@ -93,6 +98,9 @@ namespace settings {
         setting_definition<bool>{ "attackerHistopEnabled", &settings::config::attackerHistopEnabled },
         setting_definition<float>{ "attackerSlowDownMult", &settings::config::attackerSlowDownMult },
         setting_definition<float>{ "attackerSlowdownDuration", &settings::config::attackerSlowdownDuration },
+        setting_definition<float>{ "rangedHitStopDuration", &settings::config::rangedHitStopDuration },
+        setting_definition<bool>{ "aoeHitStop", &settings::config::aoeHitStop },
+        setting_definition<float>{ "aoeHitStopRadius", &settings::config::aoeHitStopRadius },
 
         setting_definition<bool>{ "preventAllDamageArrows", &settings::config::preventAllDamageArrows },
         setting_definition<bool>{ "preventAllDamageSpells", &settings::config::preventAllDamageSpells },
