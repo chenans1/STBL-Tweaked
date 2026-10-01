@@ -178,6 +178,8 @@ namespace settings {
         changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Taken Mulitplier", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Taken Mulitplier", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
         
+        changed |= ImGuiMCP::Checkbox("Disable timed block during Bash", &current.disableWindowDuringBash);
+
         changed |= ImGuiMCP::Checkbox("convert remaining timed block damage to resource cost", &current.convertRemaningDamage);
         changed |= ImGuiMCP::SliderFloat("Portion of remaining melee damage converted to resource cost", &current.meleeConvertedPortion, 0.0f, 5.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Portion of remaining arrow damage converted to resource cost", &current.arrowConvertedPortion, 0.0f, 5.0f, "%.2f");

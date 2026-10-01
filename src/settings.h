@@ -55,6 +55,8 @@ namespace settings {
         // but the entry point for reflection only affects the reflect and not base block cost.
         float arrowReflectionCostMult = 1.0f;
         float spellCostReflectionMult = 1.5f;
+
+        bool disableWindowDuringBash = true;
     };
     
     template <class T>
@@ -67,12 +69,12 @@ namespace settings {
         setting_definition<bool>{ "log", &settings::config::log },
         setting_definition<bool>{ "applyTimedBlockVFX", &settings::config::applyTimedBlockVFX },
         setting_definition<bool>{ "applyTimedBlockSFX", &settings::config::applyTimedBlockSFX },
+        setting_definition<bool>{ "disableWindowDuringBash", &settings::config::disableWindowDuringBash },
 
         setting_definition<bool>{ "preventAllDamage", &settings::config::preventAllDamage },
         setting_definition<float>{ "additionalDamageReduction", &settings::config::additionalDamageReduction },
         setting_definition<float>{ "additionalDamageReductionArrow", &settings::config::additionalDamageReductionArrow },
         setting_definition<float>{ "additionalDamageReductionSpell", &settings::config::additionalDamageReductionSpell },
-        
         setting_definition<float>{ "timedBlockWindow", &settings::config::timedBlockWindow },
 
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },

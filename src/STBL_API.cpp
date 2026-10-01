@@ -272,6 +272,15 @@ namespace {
         }
 
         const auto config = settings::Get();
+
+        if (config.disableWindowDuringBash) {
+            if (auto defenderState = request.defender->AsActorState()) {
+                if (defenderState->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+                    return result;
+                }
+            }
+        }
+
         const auto damageSettings = getDamageSettings(request.attackType, config);
         const bool hasRequiredPerk = checkFullyBlockedRequirement(request.attackType, request.defender);
 
