@@ -242,7 +242,7 @@ namespace {
 
         const bool hasStaggerPerk = form_config::Get().perks.stagger.IsMetBy(defender);
         if (cfg.AOEStaggerEnabled && hasStaggerPerk) {
-            utils::StaggerNearby(defender, cfg.AOEStaggerRadius);
+            utils::ApplySpellRadius(defender, cfg.AOEStaggerRadius, hooks::timedBlockStaggerSpell, cfg.AOEStaggerExcludeAttacker ? attacker : nullptr);
         }
 
         if (!attacker) {
@@ -256,7 +256,10 @@ namespace {
         utils::ApplySpell(defender, attacker, getAttackerSpell(attackType));
 
         if (cfg.attackerHistopEnabled) {
-            utils::applyHitstopSpell(attacker, defender, cfg.attackerSlowdownDuration);
+            if (cfg.aoeHitStop) {
+                utils::ApplySpellRadius(defender, cfg.aoeHitStopRadius, hooks::attackerHitstopSpell, attacker);
+            }
+            utils::applyHitstopSpell(attacker, defender, (attackType == AttackType::Melee) ? cfg.attackerSlowdownDuration : cfg.rangedHitStopDuration);
         }
         utils::SendTBModEvent(defender, attacker);
     }
