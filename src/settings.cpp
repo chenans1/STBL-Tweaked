@@ -177,6 +177,13 @@ namespace settings {
         changed |= ImGuiMCP::SliderFloat("Timed Block Damage Taken Mulitplier", &current.additionalDamageReduction, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Timed Block Arrow Damage Taken Mulitplier", &current.additionalDamageReductionArrow, 0.0f, 1.0f, "%.2f");
         changed |= ImGuiMCP::SliderFloat("Timed Block Spell Damage Taken Mulitplier", &current.additionalDamageReductionSpell, 0.0f, 1.0f, "%.2f");
+        
+        changed |= ImGuiMCP::Checkbox("Disable timed block during Bash", &current.disableWindowDuringBash);
+
+        changed |= ImGuiMCP::Checkbox("convert remaining timed block damage to resource cost", &current.convertRemaningDamage);
+        changed |= ImGuiMCP::SliderFloat("Portion of remaining melee damage converted to resource cost", &current.meleeConvertedPortion, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Portion of remaining arrow damage converted to resource cost", &current.arrowConvertedPortion, 0.0f, 5.0f, "%.2f");
+        changed |= ImGuiMCP::SliderFloat("Portion of remaining spell damage converted to resource cost", &current.spellConvertedPortion, 0.0f, 5.0f, "%.2f");
 
         changed |= ImGuiMCP::Checkbox("AOE Stagger Enabled (legacy)", &current.AOEStaggerEnabled);
         changed |= ImGuiMCP::SliderFloat("AOE Stagger Radius", &current.AOEStaggerRadius, 0.0f, 2048.0f, "%1.0f");

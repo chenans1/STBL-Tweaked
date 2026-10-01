@@ -37,6 +37,12 @@ namespace settings {
         bool preventAllDamageArrows = true;
         bool preventAllDamageSpells = true;
 
+        //convert all remaining damage to resource cost.
+        bool convertRemaningDamage = false;
+        float meleeConvertedPortion = 1.0f; //% of the unblocked damage that is converted into resource cost
+        float arrowConvertedPortion = 1.0f;
+        float spellConvertedPortion = 1.0f;
+
         bool reflectArrows = false;
         bool reflectSpells = false;
 
@@ -49,6 +55,8 @@ namespace settings {
         // but the entry point for reflection only affects the reflect and not base block cost.
         float arrowReflectionCostMult = 1.0f;
         float spellCostReflectionMult = 1.5f;
+
+        bool disableWindowDuringBash = true;
     };
     
     template <class T>
@@ -61,12 +69,12 @@ namespace settings {
         setting_definition<bool>{ "log", &settings::config::log },
         setting_definition<bool>{ "applyTimedBlockVFX", &settings::config::applyTimedBlockVFX },
         setting_definition<bool>{ "applyTimedBlockSFX", &settings::config::applyTimedBlockSFX },
+        setting_definition<bool>{ "disableWindowDuringBash", &settings::config::disableWindowDuringBash },
 
         setting_definition<bool>{ "preventAllDamage", &settings::config::preventAllDamage },
         setting_definition<float>{ "additionalDamageReduction", &settings::config::additionalDamageReduction },
         setting_definition<float>{ "additionalDamageReductionArrow", &settings::config::additionalDamageReductionArrow },
         setting_definition<float>{ "additionalDamageReductionSpell", &settings::config::additionalDamageReductionSpell },
-        
         setting_definition<float>{ "timedBlockWindow", &settings::config::timedBlockWindow },
 
         setting_definition<bool>{ "AOEStaggerEnabled", &settings::config::AOEStaggerEnabled },
@@ -88,6 +96,11 @@ namespace settings {
 
         setting_definition<bool>{ "preventAllDamageArrows", &settings::config::preventAllDamageArrows },
         setting_definition<bool>{ "preventAllDamageSpells", &settings::config::preventAllDamageSpells },
+
+        setting_definition<bool>{ "convertRemaningDamage", &settings::config::convertRemaningDamage },
+        setting_definition<float>{ "meleeConvertedPortion", &settings::config::meleeConvertedPortion },
+        setting_definition<float>{ "arrowConvertedPortion", &settings::config::arrowConvertedPortion },
+        setting_definition<float>{ "spellConvertedPortion", &settings::config::spellConvertedPortion },
 
         setting_definition<bool>{ "reflectArrows", &settings::config::reflectArrows },
         setting_definition<bool>{ "reflectSpells", &settings::config::reflectSpells },

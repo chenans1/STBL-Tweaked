@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace form_config {
     inline constexpr auto requirementsPath = "Data/SKSE/Plugins/STBLforms.ini";
 
@@ -24,8 +26,6 @@ namespace form_config {
         RE::EffectSetting* parryWindow = nullptr;
         RE::SpellItem* staggerSpell = nullptr;
         RE::SpellItem* timeBlockBuffSpell = nullptr;
-        RE::BGSExplosion* timedBlockExplosion = nullptr;
-        RE::BGSSoundDescriptorForm* timedBlockSound = nullptr;
 
     };
 
@@ -55,6 +55,16 @@ namespace form_config {
 
     struct Config {
         CoreForms core;
+        struct SoundForms {
+            RE::BGSSoundDescriptorForm* shield = nullptr;
+            RE::BGSSoundDescriptorForm* weapons = nullptr;
+            RE::BGSSoundDescriptorForm* otherwise = nullptr;
+        } sounds;
+        struct VFXForms {
+            std::vector<RE::BGSExplosion*> shield;
+            std::vector<RE::BGSExplosion*> weapon;
+            std::vector<RE::BGSExplosion*> otherwise;
+        } vfx;
         PerkRequirements perks;
         ReflectionPerkRequirements reflectionPerks;
     };

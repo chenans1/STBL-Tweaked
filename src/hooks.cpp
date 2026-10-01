@@ -38,7 +38,7 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
         return _ProcessHit(actor, hitData);
     }
     if (auto source = hitData.sourceRef.get(); source && source->AsProjectile()) {
-        SKSE::log::info("[processHit] sourceRef is projectile");
+        // SKSE::log::info("[processHit] sourceRef is projectile");
         return _ProcessHit(actor, hitData);
     }
     
@@ -52,9 +52,23 @@ void hooks::processHit(RE::Actor* actor, RE::HitData& hitData) {
     const auto result = timedBlockAPI->TryTriggerTimedBlock({STBL_API::AttackType::Melee, attacker, player});
 
     if (result.Triggered()) {
-        hitData.totalDamage *= result.damageMultiplier;
-        hitData.criticalDamageMult *= result.damageMultiplier;
-        hitData.physicalDamage *= result.damageMultiplier;
+        float damageMultiplier = result.damageMultiplier;
+        if (result.convertRemainingDamage) {
+            const float remainingDamage = (std::max)(0.0f, hitData.totalDamage * damageMultiplier);
+            const float staminaCost = remainingDamage * (std::max)(0.0f, result.remainingDamageConversionPortion);
+            auto* actorValueOwner = player->AsActorValueOwner();
+            if (remainingDamage > 0.0f && actorValueOwner &&
+                actorValueOwner->GetActorValue(RE::ActorValue::kStamina) >= staminaCost) {
+                if (staminaCost > 0.0f) {
+                    actorValueOwner->DamageActorValue(RE::ActorValue::kStamina, staminaCost);
+                }
+                damageMultiplier = 0.0f;
+            }
+        }
+
+        hitData.totalDamage *= damageMultiplier;
+        hitData.criticalDamageMult *= damageMultiplier;
+        hitData.physicalDamage *= damageMultiplier;
         hitData.percentBlocked = 1.0f;
         hitData.stagger = 0.0f;
 

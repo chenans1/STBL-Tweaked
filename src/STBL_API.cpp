@@ -29,6 +29,36 @@ namespace {
         return armor && armor->IsShield();
     }
 
+    [[nodiscard]] const std::vector<RE::BGSExplosion*>& getBlockerVFX(const RE::Actor* blocker) {
+        const auto& vfx = form_config::Get().vfx;
+        if (isUsingShield(blocker)) {
+            return vfx.shield;
+        }
+        if (blocker) {
+            const auto* leftHand = blocker->GetEquippedObject(true);
+            const auto* rightHand = blocker->GetEquippedObject(false);
+            if ((leftHand && leftHand->IsWeapon()) || (rightHand && rightHand->IsWeapon())) {
+                return vfx.weapon;
+            }
+        }
+        return vfx.otherwise;
+    }
+
+    [[nodiscard]] RE::BGSSoundDescriptorForm* getBlockerSound(const RE::Actor* blocker) {
+        const auto& sounds = form_config::Get().sounds;
+        if (isUsingShield(blocker)) {
+            return sounds.shield;
+        }
+        if (blocker) {
+            const auto* leftHand = blocker->GetEquippedObject(true);
+            const auto* rightHand = blocker->GetEquippedObject(false);
+            if ((leftHand && leftHand->IsWeapon()) || (rightHand && rightHand->IsWeapon())) {
+                return sounds.weapons;
+            }
+        }
+        return sounds.otherwise;
+    }
+
     static bool evalutateInterruption(RE::Actor* blocker, RE::Actor* attacker, AttackType attackType, const settings::config& cfg) {
         if (!attacker || !blocker) return false;
         if (attackType==AttackType::Melee && !cfg.meleeInterruptEnabled) return false;
@@ -163,6 +193,19 @@ namespace {
         }
     }
 
+    [[nodiscard]] float getConversion(AttackType attackType, const settings::config& config) {
+        switch (attackType) {
+            case AttackType::Melee:
+                return { config.meleeConvertedPortion };
+            case AttackType::Spell:
+                return { config.spellConvertedPortion };
+            case AttackType::Arrow:
+                return { config.arrowConvertedPortion };
+            default:
+                return {};
+        }
+    }
+
     [[nodiscard]] RE::SpellItem* getAttackerSpell(AttackType attackType) {
         switch (attackType) {
             case AttackType::Melee:
@@ -186,11 +229,15 @@ namespace {
 
         const auto cfg = settings::Get();
         if (cfg.applyTimedBlockVFX) {
-            defender->PlaceObjectAtMe(hooks::timed_block_explosion, false);
+            for (auto* explosion : getBlockerVFX(defender)) {
+                if (explosion) {
+                    defender->PlaceObjectAtMe(explosion, false);
+                }
+            }
         }
 
         if (cfg.applyTimedBlockSFX) {
-            utils::play_sound(defender, hooks::timedBlockSFX);
+            utils::play_sound(defender, getBlockerSound(defender));
         }
 
         const bool hasStaggerPerk = form_config::Get().perks.stagger.IsMetBy(defender);
@@ -225,6 +272,15 @@ namespace {
         }
 
         const auto config = settings::Get();
+
+        if (config.disableWindowDuringBash) {
+            if (auto defenderState = request.defender->AsActorState()) {
+                if (defenderState->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+                    return result;
+                }
+            }
+        }
+
         const auto damageSettings = getDamageSettings(request.attackType, config);
         const bool hasRequiredPerk = checkFullyBlockedRequirement(request.attackType, request.defender);
 
@@ -236,6 +292,9 @@ namespace {
             result.outcome = TimedBlockOutcome::Reduced;
             result.damageMultiplier = std::clamp(damageSettings.additionalDamageMultiplier, 0.0f, 1.0f);
         }
+
+        result.convertRemainingDamage = config.convertRemaningDamage;
+        result.remainingDamageConversionPortion = getConversion(request.attackType, config);
 
         result.reflectProjectile = handleReflection(request.attackType, request.defender, config);
         if (result.reflectProjectile) {
